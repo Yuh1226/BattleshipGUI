@@ -1,48 +1,28 @@
-🚢 Battleship Game - Java Swing (MVC Architecture)
-Dự án này là một trò chơi bắn tàu (Battleship) cổ điển được xây dựng bằng ngôn ngữ Java, sử dụng thư viện Swing cho giao diện đồ họa (GUI). Code được tổ chức theo mô hình kiến trúc MVC (Model-View-Controller) để đảm bảo tính dễ mở rộng và bảo trì.
+# 🚢 Battleship Game - Java Swing (MVC Architecture)
 
-🌟 Tính năng nổi bật
-Giao diện trực quan: Sử dụng lưới 10x10 với các nút bấm (JButton) để tương tác.
+Dự án này là một trò chơi bắn tàu (Battleship) cổ điển được xây dựng bằng ngôn ngữ **Java**, sử dụng thư viện **Swing** để tạo giao diện đồ họa (GUI). Code được thiết kế chặt chẽ theo mô hình **MVC (Model-View-Controller)**, giúp tách biệt logic xử lý và hiển thị.
 
-Chế độ 2 bảng: Hiển thị song song bảng hạm đội của người chơi và vùng biển của đối thủ.
+## 🌟 Tính năng nổi bật
+* **Giao diện trực quan:** Hệ thống lưới 10x10 với các nút bấm tương tác mượt mà.
+* **Mô hình 2 bảng:** Hiển thị đồng thời bảng của Người chơi (Hạm đội) và bảng của Đối thủ (Vùng biển bắn phá).
+* **Đặt tàu ngẫu nhiên:** Tự động sắp xếp 5 loại tàu (dài 5, 4, 3, 3, 2) cho cả hai bên dựa trên logic kiểm tra va chạm và tràn viền.
+* **Kiến trúc MVC:** * **Model:** Quản lý tọa độ `Node`, hạm đội `Ship` và logic bàn cờ `Board`.
+    * **View:** Xử lý hiển thị lưới nút bấm qua `BoardPanel`.
+    * **Controller:** Điều phối sự kiện click chuột, cập nhật logic và phản hồi lên giao diện.
 
-Sắp xếp tàu ngẫu nhiên: Tàu của cả hai bên được đặt tự động và ngẫu nhiên dựa trên các quy tắc logic (không chồng lấn, không tràn viền).
+## 📂 Cấu trúc thư mục (Package Structure)
+Dự án được tổ chức như sau để đảm bảo tính chuyên nghiệp:
 
-Kiến trúc chuẩn: Tách biệt hoàn toàn giữa logic tính toán (Model) và hiển thị đồ họa (View).
-
-📂 Cấu trúc dự án
-Dự án được chia thành các package chuyên biệt:
-
-battleship: Chứa file Main.java để khởi chạy ứng dụng.
-
-battleship.model: Quản lý dữ liệu và logic cốt lõi.
-
-Node.java: Định nghĩa trạng thái từng ô vuông (Trống, Tàu, Trúng, Trượt).
-
-Ship.java: Quản lý thông tin tàu (độ dài, hướng, tọa độ).
-
-Board.java: Xử lý logic bàn cờ, đặt tàu và kiểm tra va chạm.
-
-battleship.view: Chứa các thành phần giao diện.
-
-BoardPanel.java: Vẽ lưới 100 nút bấm và cập nhật màu sắc hiển thị.
-
-battleship.controller: Cầu nối giữa Model và View.
-
-GameController.java: Lắng nghe sự kiện click chuột và điều phối lượt chơi.
-
-🛠 Hướng dẫn cài đặt và chạy (Eclipse)
-Tạo Project: Mở Eclipse, chọn File > New > Java Project, đặt tên là BattleshipGUI.
-
-Tạo Packages: Chuột phải vào thư mục src, tạo các package theo cấu trúc trên.
-
-Thêm mã nguồn: Copy các file .java tương ứng vào từng package.
-
-Chạy Game: Mở file Main.java trong package battleship, chuột phải chọn Run As > Java Application.
-
-🚀 Công nghệ sử dụng
-Ngôn ngữ: Java (JDK 17+).
-
-Giao diện: Java Swing & AWT.
-
-IDE: Eclipse.
+```text
+BattleshipGUI/
+└── src/
+    ├── battleship/
+    │   └── Main.java             # Khởi tạo và chạy ứng dụng
+    ├── battleship.model/
+    │   ├── Node.java             # Trạng thái ô vuông (SHIP, HIT, MISS,...)
+    │   ├── Ship.java             # Thuộc tính tàu (length, direction, location)
+    │   └── Board.java            # Logic bàn cờ và kiểm tra đặt tàu
+    ├── battleship.view/
+    │   └── BoardPanel.java       # Giao diện lưới 100 nút bấm
+    └── battleship.controller/
+        └── GameController.java   # Điều khiển lượt chơi và sự kiện
