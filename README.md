@@ -26,3 +26,27 @@ BattleshipGUI/
     │   └── BoardPanel.java       # Giao diện lưới 100 nút bấm
     └── battleship.controller/
         └── GameController.java   # Điều khiển lượt chơi và sự kiện
+
+### 📌 Yêu cầu
+- Máy tính đã cài đặt **JDK 17 trở lên**
+- Một IDE (khuyên dùng **Eclipse** hoặc **IntelliJ IDEA**)
+
+---
+
+### 📥 Import Project
+- Mở IDE
+- Import dự án dưới dạng **Java Project**
+
+---
+
+### 📂 Cấu trúc Package
+- Đảm bảo các file nằm đúng package như đã mô tả trong project
+
+---
+
+### ▶️ Chạy ứng dụng
+- Tìm file `Main.java` trong package `battleship`
+- Chuột phải → chọn:
+
+```bash
+Run As → Java Application
