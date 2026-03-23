@@ -1,8 +1,5 @@
 package battleship.model;
 
-import battleship.model.Node;
-import java.util.Random;
-
 public class Board {
 	private Node[][] grid;
 
@@ -16,12 +13,13 @@ public class Board {
 			}
 		}
 	}
-	
-	
+
+	// Lấy ra grid
 	public Node[][] getGrid() {
 		return grid;
 	}
 
+	// Kiểm tra có thể đặt tàu không ?
 	public boolean canPlaceShip(int length, int row, int col, int direction) {
 		for (int i = 0; i < length; i++) {
 			int r = row + (direction == Ship.VERTICAl ? i : 0);
@@ -36,6 +34,7 @@ public class Board {
 		return true;
 	}
 
+	// Đặt tàu
 	public void placeShip(Ship s) {
 		int r = s.getRow();
 		int c = s.getCol();
@@ -48,14 +47,14 @@ public class Board {
 		}
 	}
 
-	public boolean fireAt(int row,int col) {
+	// Kiểm tra vị trí bắn
+	public boolean fireAt(int row, int col) {
 		Node target = grid[row][col];
-		
-		if(target.getVal() == Node.SHIP) {
+
+		if (target.getVal() == Node.SHIP) {
 			target.setVal(Node.HIT);
 			return true;
-		}
-		else if(target.getVal() == Node.EMPTY) {
+		} else if (target.getVal() == Node.EMPTY) {
 			target.setVal(Node.MISS);
 		}
 		return false;
