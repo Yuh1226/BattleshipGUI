@@ -121,9 +121,6 @@ public class GameController {
 		Node[][] p1Grid = p1board.getGrid();
 		boolean isHit;
 
-		do {
-			if(isGameOver) break;
-			
 			do {
 				r = rd.nextInt(10);
 				c = rd.nextInt(10);
@@ -136,9 +133,8 @@ public class GameController {
 			if (isHit) {
 				p2Hits++;
 				checkWinCondition();
+				botFire();
 			}
-		}
-		while(isHit && !isGameOver);
 	}
 
 	private void checkWinCondition() {
