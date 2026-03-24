@@ -1,5 +1,6 @@
 package battleship.controller;
 
+import java.util.*;
 import battleship.model.Board;
 import battleship.model.Node;
 import battleship.model.Ship;
@@ -9,7 +10,6 @@ import javax.swing.JOptionPane;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Random;
 
 public class GameController {
 	private Board p1board;
@@ -21,6 +21,8 @@ public class GameController {
 	private int p2Hits = 0;
 	private final int Win_Score = 17;
 	private boolean isGameOver = false;
+	private Stack<Node> hitLocation = new Stack<>();
+	private int dirShip = Ship.UNSET;
 
 	public GameController(Board p1board, Board p2board, BoardPanel p1view, BoardPanel p2view) {
 		this.p1board = p1board;
@@ -102,10 +104,10 @@ public class GameController {
 						if (isHit) {
 							p1Hits++;
 							checkWinCondition();
-						}
-						else {
+						} else {
 							if (!isGameOver) {
-								botFire();
+//								botFire_EASY();
+								botFire_MEDIUM();
 							}
 						}
 					}
@@ -114,27 +116,170 @@ public class GameController {
 		}
 	}
 
-	private void botFire() {
+	private void botFire_EASY() {
 		Random rd = new Random();
 		int r, c;
 		Node targetNode;
 		Node[][] p1Grid = p1board.getGrid();
 		boolean isHit;
 
-			do {
-				r = rd.nextInt(10);
-				c = rd.nextInt(10);
-				targetNode = p1Grid[r][c];
-			} while (targetNode.getVal() == Node.HIT || targetNode.getVal() == Node.MISS);
+		do {
+			r = rd.nextInt(10);
+			c = rd.nextInt(10);
+			targetNode = p1Grid[r][c];
+		} while (targetNode.getVal() == Node.HIT || targetNode.getVal() == Node.MISS);
 
-			isHit = p1board.fireAt(r, c);
-			p1view.updateButtonState(r, c, isHit);
+		isHit = p1board.fireAt(r, c);
+		p1view.updateButtonState(r, c, isHit);
 
-			if (isHit) {
-				p2Hits++;
-				checkWinCondition();
-				botFire();
+		if (isHit) {
+			p2Hits++;
+			checkWinCondition();
+			botFire_EASY();
+		}
+	}
+
+	public int guessDirShip(Node[][] p1Grid) {
+		if (hitLocation.size() < 2) {
+			return Ship.UNSET;
+		}
+
+		Node lastHit = hitLocation.get(hitLocation.size() - 1);
+		Node firstHit = hitLocation.get(0);
+
+		if (lastHit.getX() == firstHit.getX()) {
+			return Ship.HORIZONTAL;
+		} else if (lastHit.getY() == firstHit.getY()) {
+			return Ship.VERTICAl;
+		}
+
+		return Ship.UNSET;
+	}
+
+	public Node guessShip(Node[][] p1Grid, Node targetNode) {
+		List<Node> validTargets = new ArrayList<>();
+		int r = targetNode.getX();
+		int c = targetNode.getY();
+
+		if (r - 1 >= 0 && p1Grid[r - 1][c].getVal() != Node.HIT && p1Grid[r - 1][c].getVal() != Node.MISS) {
+			validTargets.add(p1Grid[r - 1][c]);
+		}
+		if (r + 1 < 10 && p1Grid[r + 1][c].getVal() != Node.HIT && p1Grid[r + 1][c].getVal() != Node.MISS) {
+			validTargets.add(p1Grid[r + 1][c]);
+		}
+		if (c - 1 >= 0 && p1Grid[r][c - 1].getVal() != Node.HIT && p1Grid[r][c - 1].getVal() != Node.MISS) {
+			validTargets.add(p1Grid[r][c - 1]);
+		}
+		if (c + 1 < 10 && p1Grid[r][c + 1].getVal() != Node.HIT && p1Grid[r][c + 1].getVal() != Node.MISS) {
+			validTargets.add(p1Grid[r][c + 1]);
+		}
+
+		if (!validTargets.isEmpty()) {
+			Random rd = new Random();
+			int randomIndex = rd.nextInt(validTargets.size());
+			Node selectedNode = validTargets.get(randomIndex);
+			return selectedNode;
+		}
+		return null;
+	}
+
+	public Node fireAlongDirection(Node[][] p1Grid) {
+		Node lastHit = hitLocation.peek();
+		int r = lastHit.getX();
+		int c = lastHit.getY();
+		List<Node> validTargets = new ArrayList<>();
+
+		if (dirShip == Ship.HORIZONTAL) {
+			// Ktra trái phải
+			if (c - 1 >= 0 && p1Grid[r][c - 1].getVal() != Node.HIT && p1Grid[r][c - 1].getVal() != Node.MISS) {
+				validTargets.add(p1Grid[r][c - 1]);
 			}
+			if (c + 1 < 10 && p1Grid[r][c + 1].getVal() != Node.HIT && p1Grid[r][c + 1].getVal() != Node.MISS) {
+				validTargets.add(p1Grid[r][c + 1]);
+			}
+		} else if (dirShip == Ship.VERTICAl) {
+			// Ktra trên dưới
+			if (r - 1 >= 0 && p1Grid[r - 1][c].getVal() != Node.HIT && p1Grid[r - 1][c].getVal() != Node.MISS) {
+				validTargets.add(p1Grid[r - 1][c]);
+			}
+			if (r + 1 < 10 && p1Grid[r + 1][c].getVal() != Node.HIT && p1Grid[r + 1][c].getVal() != Node.MISS) {
+				validTargets.add(p1Grid[r + 1][c]);
+			}
+		}
+
+		if (!validTargets.isEmpty()) {
+			return validTargets.get(0);
+		} else {
+			Node firstHit = hitLocation.get(0);
+
+			hitLocation.push(firstHit);
+
+			Node fallBack = guessShip(p1Grid, firstHit);
+			if (fallBack == null) {
+				clearBotMemory();
+				return getRandomNode(p1Grid);
+			}
+			return fallBack;
+		}
+	}
+
+	private Node getRandomNode(Node[][] p1Grid) {
+		Random rd = new Random();
+		int r, c;
+		Node targetNode;
+		do {
+			r = rd.nextInt(10);
+			c = rd.nextInt(10);
+			targetNode = p1Grid[r][c];
+		} while (targetNode.getVal() == Node.HIT || targetNode.getVal() == Node.MISS);
+		return targetNode;
+	}
+
+	private void clearBotMemory() {
+		hitLocation.clear();
+		dirShip = Ship.UNSET;
+	}
+
+	private void botFire_MEDIUM() {
+		if (isGameOver)
+			return;
+
+		Node targetNode = null;
+		Node[][] p1Grid = p1board.getGrid();
+
+		if (hitLocation.isEmpty()) {
+			targetNode = getRandomNode(p1Grid);
+		} else {
+			if (dirShip == Ship.UNSET) {
+				targetNode = guessShip(p1Grid, hitLocation.peek());
+				if (targetNode == null) {
+					clearBotMemory();
+					targetNode = getRandomNode(p1Grid);
+				}
+			} else {
+				targetNode = fireAlongDirection(p1Grid);
+			}
+		}
+
+		int r = targetNode.getX();
+		int c = targetNode.getY();
+		boolean isHit = p1board.fireAt(r, c);
+		p1view.updateButtonState(r, c, isHit);
+
+		if (isHit) {
+			p2Hits++;
+			checkWinCondition();
+
+			hitLocation.push(targetNode);
+			
+			if(dirShip == Ship.UNSET) {
+				dirShip = guessDirShip(p1Grid);
+			}
+
+			if(!isGameOver) {
+				botFire_MEDIUM();
+			}
+		}
 	}
 
 	private void checkWinCondition() {
