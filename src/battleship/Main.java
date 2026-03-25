@@ -5,54 +5,63 @@ import java.awt.*;
 
 import battleship.model.Board;
 import battleship.view.BoardPanel;
+import battleship.view.GameWindow;
+import battleship.view.screens.BattleView;
+import battleship.view.screens.DifficultyView;
+import battleship.view.screens.MenuView;
+import battleship.view.screens.SetupView;
 import battleship.controller.GameController;
-
-import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
 
 public class Main {
 	public static void main(String[] args) {
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				// 1.Model
-				Board p1board = new Board();
-				Board p2board = new Board();
+		SwingUtilities.invokeLater(() -> {
+			// 1.Model
+			Board p1board = new Board();
+			Board p2board = new Board();
 
-				// 2.View
-				BoardPanel p1view = new BoardPanel();
-				BoardPanel p2view = new BoardPanel();
+			// 2.View
+			BoardPanel p1view = new BoardPanel();
+			BoardPanel p2view = new BoardPanel();
+			BoardPanel setupBoard = new BoardPanel();
+			BattleView battleView = new BattleView(p1view, p2view);
+			MenuView menuView = new MenuView();
+			DifficultyView difficultyView = new DifficultyView();
+			SetupView setupView = new SetupView(setupBoard);
 
-				// Cửa sổ
-				JPanel mainPanel = new JPanel(new GridLayout(1, 2, 20, 0));
-				mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+			// 3.Controller
+			new GameController(p1board, p2board, battleView.getPlayerBoard(), battleView.getEnemyBoard());
 
-				JPanel p1Container = new JPanel(new BorderLayout());
-				JLabel p1Label = new JLabel("HẠM ĐỘI CỦA BẠN", SwingConstants.CENTER);
-				p1Label.setFont(new Font("Arial", Font.BOLD, 16));
-				p1Container.add(p1Label, BorderLayout.NORTH);
-				p1Container.add(p1view, BorderLayout.CENTER);
+			GameWindow window = new GameWindow("Game Dai Chien Tren Bien");
+			window.addScreen(GameWindow.SCREEN_MENU, menuView);
+			window.addScreen(GameWindow.SCREEN_DIFFICULTY, difficultyView);
+			window.addScreen(GameWindow.SCREEN_SETUP, setupView);
+			window.addScreen(GameWindow.SCREEN_BATTLE, battleView);
+			window.showScreen(GameWindow.SCREEN_MENU);
 
-				JPanel p2Container = new JPanel(new BorderLayout());
-				JLabel p2Label = new JLabel("VÙNG BIỂN ĐỊCH", SwingConstants.CENTER);
-				p2Label.setFont(new Font("Arial", Font.BOLD, 16));
-				p2Container.add(p2Label, BorderLayout.NORTH);
-				p2Container.add(p2view, BorderLayout.CENTER);
+			menuView.setListener(() -> window.showScreen(GameWindow.SCREEN_DIFFICULTY));
+			difficultyView.setListener(new DifficultyView.Listener() {
+				@Override
+				public void onDifficultySelected(DifficultyView.Difficulty difficulty) {
+					window.showScreen(GameWindow.SCREEN_SETUP);
+				}
 
-				mainPanel.add(p1Container);
-				mainPanel.add(p2Container);
+				@Override
+				public void onBack() {
+					window.showScreen(GameWindow.SCREEN_MENU);
+				}
+			});
+			setupView.setListener(new SetupView.Listener() {
+				@Override
+				public void onBack() {
+					window.showScreen(GameWindow.SCREEN_DIFFICULTY);
+				}
 
-				// 3.Controller
-				new GameController(p1board, p2board, p1view, p2view);
-
-				// Tạo khung cửa sổ chứa bảng chứ cái
-				JFrame frame = new JFrame("Game Đại Chiến Trên Biển");
-				frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-				frame.add(mainPanel);
-
-				frame.setSize(1000, 500);
-				frame.setLocationRelativeTo(null);
-				frame.setVisible(true);
-			}
+				@Override
+				public void onContinue() {
+					window.showScreen(GameWindow.SCREEN_BATTLE);
+				}
+			});
+			window.setVisible(true);
 		});
 	}
 }

@@ -1,1 +1,8 @@
 /bin/
+
+*.class
+*.jar
+*.war
+
+.settings/
+.project
