@@ -5,6 +5,7 @@ import battleship.model.Board;
 import battleship.model.Node;
 import battleship.model.Ship;
 import battleship.view.BoardPanel;
+import battleship.ai.BattleshipAI;
 
 import javax.swing.JOptionPane;
 import java.awt.Color;
@@ -24,6 +25,7 @@ public class GameController {
 	private Stack<Node> hitLocation = new Stack<>();
 	private int dirShip = Ship.UNSET;
 	private boolean isBotThinking = false;
+	private BattleshipAI botAI = new BattleshipAI();
 
 	public GameController(Board p1board, Board p2board, BoardPanel p1view, BoardPanel p2view) {
 		this.p1board = p1board;
@@ -92,7 +94,6 @@ public class GameController {
 						if (isGameOver || isBotThinking) {
 							return;
 						}
-							
 
 						Node targetNode = p2board.getGrid()[row][col];
 
@@ -122,7 +123,7 @@ public class GameController {
 
 	private void delayedBotFire() {
 		isBotThinking = true;
-		
+
 		javax.swing.Timer timer = new javax.swing.Timer(1000, new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -156,191 +157,37 @@ public class GameController {
 		}
 	}
 
-	public int guessDirShip(Node[][] p1Grid) {
-		if (hitLocation.size() < 2) {
-			return Ship.UNSET;
-		}
-
-		Node lastHit = hitLocation.get(hitLocation.size() - 1);
-		Node firstHit = hitLocation.get(0);
-
-		if (lastHit.getX() == firstHit.getX()) {
-			return Ship.HORIZONTAL;
-		} else if (lastHit.getY() == firstHit.getY()) {
-			return Ship.VERTICAl;
-		}
-
-		return Ship.UNSET;
-	}
-
-	// Đoán tàu (bắn theo 4 hướng)
-	public Node guessShip(Node[][] p1Grid, Node targetNode) {
-		List<Node> validTargets = new ArrayList<>();
-		int r = targetNode.getX();
-		int c = targetNode.getY();
-
-		// Top
-		if (r - 1 >= 0 && p1Grid[r - 1][c].getVal() != Node.HIT && p1Grid[r - 1][c].getVal() != Node.MISS) {
-			validTargets.add(p1Grid[r - 1][c]);
-		}
-		// Bottom
-		if (r + 1 < 10 && p1Grid[r + 1][c].getVal() != Node.HIT && p1Grid[r + 1][c].getVal() != Node.MISS) {
-			validTargets.add(p1Grid[r + 1][c]);
-		}
-		// Left
-		if (c - 1 >= 0 && p1Grid[r][c - 1].getVal() != Node.HIT && p1Grid[r][c - 1].getVal() != Node.MISS) {
-			validTargets.add(p1Grid[r][c - 1]);
-		}
-		// Right
-		if (c + 1 < 10 && p1Grid[r][c + 1].getVal() != Node.HIT && p1Grid[r][c + 1].getVal() != Node.MISS) {
-			validTargets.add(p1Grid[r][c + 1]);
-		}
-
-		// Chọn random top,bottom,left,right nêu có
-		if (!validTargets.isEmpty()) {
-			Random rd = new Random();
-			int randomIndex = rd.nextInt(validTargets.size());
-			Node selectedNode = validTargets.get(randomIndex);
-			return selectedNode;
-		}
-		return null;
-	}
-
-	// Bắn theo hướng
-	public Node fireAlongDirection(Node[][] p1Grid) {
-		Node lastHit = hitLocation.peek();
-		int r = lastHit.getX();
-		int c = lastHit.getY();
-		List<Node> validTargets = new ArrayList<>();
-
-		if (dirShip == Ship.HORIZONTAL) {
-			// Ktra trái phải
-			if (c - 1 >= 0 && p1Grid[r][c - 1].getVal() != Node.HIT && p1Grid[r][c - 1].getVal() != Node.MISS) {
-				validTargets.add(p1Grid[r][c - 1]);
-			}
-			if (c + 1 < 10 && p1Grid[r][c + 1].getVal() != Node.HIT && p1Grid[r][c + 1].getVal() != Node.MISS) {
-				validTargets.add(p1Grid[r][c + 1]);
-			}
-		} else if (dirShip == Ship.VERTICAl) {
-			// Ktra trên dưới
-			if (r - 1 >= 0 && p1Grid[r - 1][c].getVal() != Node.HIT && p1Grid[r - 1][c].getVal() != Node.MISS) {
-				validTargets.add(p1Grid[r - 1][c]);
-			}
-			if (r + 1 < 10 && p1Grid[r + 1][c].getVal() != Node.HIT && p1Grid[r + 1][c].getVal() != Node.MISS) {
-				validTargets.add(p1Grid[r + 1][c]);
-			}
-		}
-
-		if (!validTargets.isEmpty()) {
-			return validTargets.get(0);
-		} else {
-			Node firstHit = hitLocation.get(0);
-			int rFirst = firstHit.getX();
-			int cFirst = firstHit.getY();
-			List<Node> fallbackTargets = new ArrayList<>();
-			
-			if(dirShip == Ship.HORIZONTAL) {
-				if (cFirst - 1 >= 0 && p1Grid[rFirst][cFirst - 1].getVal() != Node.HIT && p1Grid[rFirst][cFirst - 1].getVal() != Node.MISS) {
-					fallbackTargets.add(p1Grid[rFirst][cFirst - 1]);
-				}
-				if (cFirst + 1 < 10 && p1Grid[rFirst][cFirst + 1].getVal() != Node.HIT && p1Grid[rFirst][cFirst + 1].getVal() != Node.MISS) {
-					fallbackTargets.add(p1Grid[rFirst][cFirst + 1]);
-				}
-			}else if(dirShip == Ship.VERTICAl) {
-				if (rFirst - 1 >= 0 && p1Grid[rFirst - 1][cFirst].getVal() != Node.HIT && p1Grid[rFirst - 1][cFirst].getVal() != Node.MISS) {
-					fallbackTargets.add(p1Grid[rFirst - 1][cFirst]);
-				}
-				if (rFirst + 1 < 10 && p1Grid[rFirst + 1][cFirst].getVal() != Node.HIT && p1Grid[rFirst + 1][cFirst].getVal() != Node.MISS) {
-					fallbackTargets.add(p1Grid[rFirst + 1][cFirst]);
-				}
-			}
-			
-			if (!fallbackTargets.isEmpty()) {
-				hitLocation.push(firstHit);
-				return fallbackTargets.get(0);
-			} else {
-				clearBotMemory();
-				return getRandomNode(p1Grid);
-			}
-		}
-	}
-
-	private Node getRandomNode(Node[][] p1Grid) {
-		Random rd = new Random();
-		int r, c;
-		Node targetNode;
-		do {
-			r = rd.nextInt(10);
-			c = rd.nextInt(10);
-			targetNode = p1Grid[r][c];
-		} while (targetNode.getVal() == Node.HIT || targetNode.getVal() == Node.MISS);
-		return targetNode;
-	}
-
-	private void clearBotMemory() {
-		hitLocation.clear();
-		dirShip = Ship.UNSET;
-	}
-
 	private void botFire_MEDIUM() {
-		if (isGameOver)
-			return;
+		if (isGameOver) return;
 
-		Node targetNode = null;
-		Node[][] p1Grid = p1board.getGrid();
-
-		if (hitLocation.isEmpty()) {
-			targetNode = getRandomNode(p1Grid);
-		} else {
-			if (dirShip == Ship.UNSET) {
-				targetNode = guessShip(p1Grid, hitLocation.peek());
-				if (targetNode == null) {
-					clearBotMemory();
-					targetNode = getRandomNode(p1Grid);
-				}
-			} else {
-				targetNode = fireAlongDirection(p1Grid);
-			}
-		}
-
+		// 1. Xin tọa độ từ Bot AI
+		Node targetNode = botAI.determineTarget(p1board);
 		int r = targetNode.getX();
 		int c = targetNode.getY();
+
+		// 2. Tiến hành nổ súng
 		boolean isHit = p1board.fireAt(r, c);
 		p1view.updateButtonState(r, c, isHit);
 
 		if (isHit) {
 			p2Hits++;
 			checkWinCondition();
-
-			hitLocation.push(targetNode);
-
-			if (dirShip == Ship.UNSET) {
-				dirShip = guessDirShip(p1Grid);
-			}
-
+			
+			// In ra console nếu chìm tàu (isSunkAt phải gọi trước khi AI xóa memory)
 			if (p1board.isSunkAt(r, c)) {
-				int lengthShip = p1board.lengthShipIs(r, c);
-				if(lengthShip < hitLocation.size()) {
-					for(int i=0 ; i < lengthShip ; i++) {
-						hitLocation.pop();
-					}
-					dirShip = Ship.UNSET;
-				}
-				else {
-					clearBotMemory();
-				}
 				System.out.println("Bot đã bắn chìm 1 tàu của bạn");
 			}
 
+			// 3. Cập nhật lại kết quả cho AI nhớ
+			botAI.updateAfterFire(p1board, targetNode, isHit);
+
 			if (!isGameOver) {
-//				botFire_MEDIUM();
 				delayedBotFire();
 			} else {
 				isBotThinking = false; // Game over thì mở khóa
 			}
-		}
-		else {
-			isBotThinking = false;
+		} else {
+			isBotThinking = false; // Bắn trượt mở khóa cho người chơi
 		}
 	}
 

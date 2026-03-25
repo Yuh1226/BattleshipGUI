@@ -100,7 +100,6 @@ public class Board {
 		for (Ship s : fleet) {
 			int r = s.getRow();
 			int c = s.getCol();
-			boolean isTargetShip = false;
 			
 			//Ktra tàu đã bị bắn chưa
 			for (int i = 0; i < s.getLength(); i++) {
