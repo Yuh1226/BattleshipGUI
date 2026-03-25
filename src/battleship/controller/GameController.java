@@ -23,6 +23,7 @@ public class GameController {
 	private boolean isGameOver = false;
 	private Stack<Node> hitLocation = new Stack<>();
 	private int dirShip = Ship.UNSET;
+	private boolean isBotThinking = false;
 
 	public GameController(Board p1board, Board p2board, BoardPanel p1view, BoardPanel p2view) {
 		this.p1board = p1board;
@@ -88,8 +89,10 @@ public class GameController {
 					@Override
 					public void actionPerformed(ActionEvent e) {
 
-						if (isGameOver)
+						if (isGameOver || isBotThinking) {
 							return;
+						}
+							
 
 						Node targetNode = p2board.getGrid()[row][col];
 
@@ -107,13 +110,27 @@ public class GameController {
 						} else {
 							if (!isGameOver) {
 //								botFire_EASY();
-								botFire_MEDIUM();
+//								botFire_MEDIUM();
+								delayedBotFire();
 							}
 						}
 					}
 				});
 			}
 		}
+	}
+
+	private void delayedBotFire() {
+		isBotThinking = true;
+		
+		javax.swing.Timer timer = new javax.swing.Timer(1000, new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				botFire_MEDIUM();
+			}
+		});
+		timer.setRepeats(false);
+		timer.start();
 	}
 
 	private void botFire_EASY() {
@@ -156,24 +173,30 @@ public class GameController {
 		return Ship.UNSET;
 	}
 
+	// Đoán tàu (bắn theo 4 hướng)
 	public Node guessShip(Node[][] p1Grid, Node targetNode) {
 		List<Node> validTargets = new ArrayList<>();
 		int r = targetNode.getX();
 		int c = targetNode.getY();
 
+		// Top
 		if (r - 1 >= 0 && p1Grid[r - 1][c].getVal() != Node.HIT && p1Grid[r - 1][c].getVal() != Node.MISS) {
 			validTargets.add(p1Grid[r - 1][c]);
 		}
+		// Bottom
 		if (r + 1 < 10 && p1Grid[r + 1][c].getVal() != Node.HIT && p1Grid[r + 1][c].getVal() != Node.MISS) {
 			validTargets.add(p1Grid[r + 1][c]);
 		}
+		// Left
 		if (c - 1 >= 0 && p1Grid[r][c - 1].getVal() != Node.HIT && p1Grid[r][c - 1].getVal() != Node.MISS) {
 			validTargets.add(p1Grid[r][c - 1]);
 		}
+		// Right
 		if (c + 1 < 10 && p1Grid[r][c + 1].getVal() != Node.HIT && p1Grid[r][c + 1].getVal() != Node.MISS) {
 			validTargets.add(p1Grid[r][c + 1]);
 		}
 
+		// Chọn random top,bottom,left,right nêu có
 		if (!validTargets.isEmpty()) {
 			Random rd = new Random();
 			int randomIndex = rd.nextInt(validTargets.size());
@@ -183,6 +206,7 @@ public class GameController {
 		return null;
 	}
 
+	// Bắn theo hướng
 	public Node fireAlongDirection(Node[][] p1Grid) {
 		Node lastHit = hitLocation.peek();
 		int r = lastHit.getX();
@@ -211,15 +235,33 @@ public class GameController {
 			return validTargets.get(0);
 		} else {
 			Node firstHit = hitLocation.get(0);
-
-			hitLocation.push(firstHit);
-
-			Node fallBack = guessShip(p1Grid, firstHit);
-			if (fallBack == null) {
+			int rFirst = firstHit.getX();
+			int cFirst = firstHit.getY();
+			List<Node> fallbackTargets = new ArrayList<>();
+			
+			if(dirShip == Ship.HORIZONTAL) {
+				if (cFirst - 1 >= 0 && p1Grid[rFirst][cFirst - 1].getVal() != Node.HIT && p1Grid[rFirst][cFirst - 1].getVal() != Node.MISS) {
+					fallbackTargets.add(p1Grid[rFirst][cFirst - 1]);
+				}
+				if (cFirst + 1 < 10 && p1Grid[rFirst][cFirst + 1].getVal() != Node.HIT && p1Grid[rFirst][cFirst + 1].getVal() != Node.MISS) {
+					fallbackTargets.add(p1Grid[rFirst][cFirst + 1]);
+				}
+			}else if(dirShip == Ship.VERTICAl) {
+				if (rFirst - 1 >= 0 && p1Grid[rFirst - 1][cFirst].getVal() != Node.HIT && p1Grid[rFirst - 1][cFirst].getVal() != Node.MISS) {
+					fallbackTargets.add(p1Grid[rFirst - 1][cFirst]);
+				}
+				if (rFirst + 1 < 10 && p1Grid[rFirst + 1][cFirst].getVal() != Node.HIT && p1Grid[rFirst + 1][cFirst].getVal() != Node.MISS) {
+					fallbackTargets.add(p1Grid[rFirst + 1][cFirst]);
+				}
+			}
+			
+			if (!fallbackTargets.isEmpty()) {
+				hitLocation.push(firstHit);
+				return fallbackTargets.get(0);
+			} else {
 				clearBotMemory();
 				return getRandomNode(p1Grid);
 			}
-			return fallBack;
 		}
 	}
 
@@ -271,14 +313,34 @@ public class GameController {
 			checkWinCondition();
 
 			hitLocation.push(targetNode);
-			
-			if(dirShip == Ship.UNSET) {
+
+			if (dirShip == Ship.UNSET) {
 				dirShip = guessDirShip(p1Grid);
 			}
 
-			if(!isGameOver) {
-				botFire_MEDIUM();
+			if (p1board.isSunkAt(r, c)) {
+				int lengthShip = p1board.lengthShipIs(r, c);
+				if(lengthShip < hitLocation.size()) {
+					for(int i=0 ; i < lengthShip ; i++) {
+						hitLocation.pop();
+					}
+					dirShip = Ship.UNSET;
+				}
+				else {
+					clearBotMemory();
+				}
+				System.out.println("Bot đã bắn chìm 1 tàu của bạn");
 			}
+
+			if (!isGameOver) {
+//				botFire_MEDIUM();
+				delayedBotFire();
+			} else {
+				isBotThinking = false; // Game over thì mở khóa
+			}
+		}
+		else {
+			isBotThinking = false;
 		}
 	}
 

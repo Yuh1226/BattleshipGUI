@@ -1,9 +1,14 @@
 package battleship.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Board {
 	private Node[][] grid;
 
 	public static final int size = 10;
+
+	private List<Ship> fleet = new ArrayList<>();
 
 	public Board() {
 		grid = new Node[size][size];
@@ -45,6 +50,7 @@ public class Board {
 				grid[r + i][c].setVal(Node.SHIP);
 			}
 		}
+		fleet.add(s);
 	}
 
 	// Kiểm tra vị trí bắn
@@ -60,6 +66,54 @@ public class Board {
 		return false;
 	}
 
+	public boolean isSunkAt(int row, int col) {
+		for (Ship s : fleet) {
+			int r = s.getRow();
+			int c = s.getCol();
+			boolean isTargetShip = false;
+			
+			//Ktra tàu đã bị bắn chưa
+			for (int i = 0; i < s.getLength(); i++) {
+				int checkR = r + (s.getDirection() == Ship.VERTICAl ? i : 0);
+				int checkC = c + (s.getDirection() == Ship.HORIZONTAL ? i : 0);
+				if (checkR == row && checkC == col) {
+					isTargetShip = true;
+					break;
+				}
+			}
+			//Ktra tàu đã bị bắn hết chưa
+			if (isTargetShip) {
+				for (int i = 0; i < s.getLength(); i++) {
+					int checkR = r + (s.getDirection() == Ship.VERTICAl ? i : 0);
+					int checkC = c + (s.getDirection() == Ship.HORIZONTAL ? i : 0);
+					if (grid[checkR][checkC].getVal() != Node.HIT) {
+						return false;
+					}
+				}
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public int lengthShipIs(int row, int col) {
+		for (Ship s : fleet) {
+			int r = s.getRow();
+			int c = s.getCol();
+			boolean isTargetShip = false;
+			
+			//Ktra tàu đã bị bắn chưa
+			for (int i = 0; i < s.getLength(); i++) {
+				int checkR = r + (s.getDirection() == Ship.VERTICAl ? i : 0);
+				int checkC = c + (s.getDirection() == Ship.HORIZONTAL ? i : 0);
+				if (checkR == row && checkC == col) {
+					return s.getLength();
+				}
+			}
+		}
+		return 0;
+	}
+	
 	public static void main(String[] args) {
 	}
 }
