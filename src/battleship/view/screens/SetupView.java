@@ -43,6 +43,7 @@ public class SetupView extends JPanel {
 
 		JPanel boardPanel = new JPanel(new BorderLayout());
 		boardPanel.setBackground(UiTheme.SAND);
+		boardPanel.setBorder(BorderFactory.createLineBorder(UiTheme.OLIVE, 2));
 		boardPanel.add(setupBoard, BorderLayout.CENTER);
 
 		JPanel rightPanel = buildShipPanel();
@@ -77,6 +78,7 @@ public class SetupView extends JPanel {
 	private JPanel buildShipPanel() {
 		JPanel panel = new JPanel(new GridBagLayout());
 		panel.setBackground(UiTheme.SAND);
+		panel.setBorder(BorderFactory.createLineBorder(UiTheme.OLIVE, 2));
 
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.insets = new Insets(4, 4, 4, 4);
@@ -90,13 +92,13 @@ public class SetupView extends JPanel {
 		panel.add(shipsLabel, gbc);
 
 		gbc.gridy = 1;
-		panel.add(new JCheckBox("Tau 5"), gbc);
+		panel.add(createShipCheck("Tau 5"), gbc);
 		gbc.gridy = 2;
-		panel.add(new JCheckBox("Tau 4"), gbc);
+		panel.add(createShipCheck("Tau 4"), gbc);
 		gbc.gridy = 3;
-		panel.add(new JCheckBox("Tau 3"), gbc);
+		panel.add(createShipCheck("Tau 3"), gbc);
 		gbc.gridy = 4;
-		panel.add(new JCheckBox("Tau 2"), gbc);
+		panel.add(createShipCheck("Tau 2"), gbc);
 
 		JLabel directionLabel = new JLabel("Huong dat");
 		directionLabel.setFont(UiTheme.bodyFont());
@@ -105,9 +107,9 @@ public class SetupView extends JPanel {
 		panel.add(directionLabel, gbc);
 
 		JRadioButton horizontal = new JRadioButton("Ngang");
-		horizontal.setBackground(UiTheme.SAND);
+		styleRadio(horizontal);
 		JRadioButton vertical = new JRadioButton("Doc");
-		vertical.setBackground(UiTheme.SAND);
+		styleRadio(vertical);
 		ButtonGroup group = new ButtonGroup();
 		group.add(horizontal);
 		group.add(vertical);
@@ -136,5 +138,19 @@ public class SetupView extends JPanel {
 
 	public BoardPanel getSetupBoard() {
 		return setupBoard;
+	}
+
+	private JCheckBox createShipCheck(String text) {
+		JCheckBox checkBox = new JCheckBox(text);
+		checkBox.setFont(UiTheme.bodyFont());
+		checkBox.setForeground(UiTheme.NAVY);
+		checkBox.setBackground(UiTheme.SAND);
+		return checkBox;
+	}
+
+	private void styleRadio(JRadioButton radioButton) {
+		radioButton.setFont(UiTheme.bodyFont());
+		radioButton.setForeground(UiTheme.NAVY);
+		radioButton.setBackground(UiTheme.SAND);
 	}
 }

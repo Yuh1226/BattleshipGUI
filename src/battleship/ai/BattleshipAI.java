@@ -13,19 +13,35 @@ public class BattleshipAI {
 	private List<Node> hitLocation = new ArrayList<>();
 	private int dirShip = Ship.UNSET;
 
-	// 1. HÀM QUYẾT ĐỊNH MỤC TIÊU BẮN
-	public Node determineTarget(Board playerBoard) {
-		Node[][] p1Grid = playerBoard.getGrid();
+	public static final int EASY = 1;
+	public static final int MEDIUM = 2;
+	public static final int HARD = 3;
+
+	// HÀM QUYẾT ĐỊNH MỤC TIÊU BẮN
+	public Node determineTarget(Board p1board, Integer level, List<Integer> aliveShips) {
+		Node[][] p1Grid = p1board.getGrid();
 		Node targetNode = null;
 
 		if (hitLocation.isEmpty()) {
-			targetNode = getRandomNode(p1Grid);
+			if (level != HARD) {
+				targetNode = getRandomNode(p1Grid);
+			} else {
+				targetNode = targetHeatMap(p1Grid, aliveShips);
+			}
 		} else {
 			if (dirShip == Ship.UNSET) {
-				targetNode = guessShip(p1Grid, hitLocation.get(hitLocation.size() - 1));
+				if (level == HARD) {
+					targetNode = targetHeatMap(p1Grid, aliveShips); // Hard: Tính xác suất ô kế tiếp
+				} else {
+					targetNode = guessShip(p1Grid, hitLocation.get(hitLocation.size() - 1)); // Medium: Random 4 hướng
+				}
 				if (targetNode == null) {
 					clearBotMemory();
-					targetNode = getRandomNode(p1Grid);
+					if (level == HARD) {
+						targetNode = targetHeatMap(p1Grid, aliveShips);
+					} else {
+						targetNode = getRandomNode(p1Grid);
+					}
 				}
 			} else {
 				targetNode = fireAlongDirection(p1Grid);
@@ -33,9 +49,9 @@ public class BattleshipAI {
 		}
 		return targetNode;
 	}
-
-	// 2. HÀM CẬP NHẬT TRÍ NHỚ SAU KHI BẮN
-	public void updateAfterFire(Board playerBoard, Node targetNode, boolean isHit) {
+	
+	// HÀM CẬP NHẬT TRÍ NHỚ SAU KHI BẮN
+	public void updateAfterFire(Board p1board, Node targetNode, boolean isHit) {
 		if (isHit) {
 			hitLocation.add(targetNode);
 
@@ -44,8 +60,8 @@ public class BattleshipAI {
 			}
 
 			// Nếu tàu chìm, xóa trí nhớ liên quan
-			if (playerBoard.isSunkAt(targetNode.getX(), targetNode.getY())) {
-				removeSunkShipFromMemory(playerBoard);
+			if (p1board.isSunkAt(targetNode.getX(), targetNode.getY())) {
+				removeSunkShipFromMemory(p1board);
 				if (hitLocation.isEmpty()) {
 					dirShip = Ship.UNSET;
 				}
@@ -53,16 +69,100 @@ public class BattleshipAI {
 		}
 	}
 
+	// họn mục tiêu cho bản đồ nhiệt
+	public Node targetHeatMap(Node[][] p1Grid, List<Integer> aliveShips) {
+		int[][] heatmap = new int[10][10];
+		Node targetNode = null;
+
+		for (int shipLen : aliveShips) {
+			for (int r = 0; r < 10; r++) {
+				for (int c = 0; c < 10; c++) {
+
+					// Thử đặt Ngang
+					if (canPlaceHypothetical(p1Grid, shipLen, r, c, Ship.HORIZONTAL)) {
+						addWeightToHeatmap(p1Grid, shipLen, r, c, heatmap, Ship.HORIZONTAL);
+					}
+
+					// Thử đặt Dọc
+					if (canPlaceHypothetical(p1Grid, shipLen, r, c, Ship.VERTICAl)) {
+						addWeightToHeatmap(p1Grid, shipLen, r, c, heatmap, Ship.VERTICAl);
+					}
+				}
+			}
+		}
+
+		return getHighestScoreNode(p1Grid, heatmap);
+	}
+
+	public boolean canPlaceHypothetical(Node[][] p1Grid, int length, int row, int col, int direction) {
+		for (int i = 0; i < length; i++) {
+			int r = row + (direction == Ship.VERTICAl ? i : 0);
+			int c = col + (direction == Ship.HORIZONTAL ? i : 0);
+
+			if (r < 0 || r >= 10 || c < 0 || c >= 10)
+				return false;
+
+			if (p1Grid[r][c].getVal() == Node.MISS || p1Grid[r][c].getVal() == Node.SUNK)
+				return false;
+		}
+		return true;
+	}
+
+	// Thêm trọng số cho bản đồ nhiệt
+	public void addWeightToHeatmap(Node[][] p1Grid, int shipLen, int r, int c, int[][] heatmap, int direction) {
+		int weight = 1; // Điểm cơ bản
+
+		for (int i = 0; i < shipLen; i++) {
+			int checkR = r + (direction == Ship.VERTICAl ? i : 0);
+			int checkC = c + (direction == Ship.HORIZONTAL ? i : 0);
+			if (p1Grid[checkR][checkC].getVal() == Node.HIT) {
+				weight += 50; // Cộng siêu trọng số
+			}
+		}
+
+		for (int i = 0; i < shipLen; i++) {
+			if (direction == Ship.HORIZONTAL) {
+				heatmap[r][c + i] += weight;
+			} else {
+				heatmap[r + i][c] += weight;
+			}
+		}
+	}
+
+	// Lấy trọng số cao nhất
+	public Node getHighestScoreNode(Node[][] p1Grid, int[][] heatmap) {
+		int maxHeat = -1;
+		int row = 0;
+		int col = 0;
+		for (int i = 0; i < 10; i++) {
+			for (int j = 0; j < 10; j++) {
+				int val = p1Grid[i][j].getVal();
+
+				if (val != Node.HIT && val != Node.MISS && val != Node.SUNK) {
+					if (heatmap[i][j] > maxHeat) {
+						maxHeat = heatmap[i][j];
+						row = i;
+						col = j;
+					}
+				}
+			}
+		}
+		return p1Grid[row][col];
+	}
 
 	private Node getRandomNode(Node[][] p1Grid) {
 		Random rd = new Random();
 		int r, c;
 		Node targetNode;
+		int attempts = 0;
 		do {
 			r = rd.nextInt(10);
 			c = rd.nextInt(10);
 			targetNode = p1Grid[r][c];
-		} while (targetNode.getVal() == Node.HIT || targetNode.getVal() == Node.MISS);
+			targetNode = p1Grid[r][c];
+			attempts++;
+		} while (targetNode.getVal() == Node.HIT || targetNode.getVal() == Node.MISS
+				|| targetNode.getVal() == Node.SUNK);
 		return targetNode;
 	}
 

@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 
 public class BoardPanel extends JPanel {
+	private static final long serialVersionUID = 1L;
 	private JButton[][] buttons;
 	public static final int SIZE = 10;
 
@@ -36,6 +37,12 @@ public class BoardPanel extends JPanel {
 
 	public JButton getButton(int row, int col) {
 		return buttons[row][col];
+	}
+
+	public void markButtonAsSunk(int row, int col) {
+		buttons[row][col].setBackground(Color.BLACK);
+		buttons[row][col].setText("☠");
+		buttons[row][col].setForeground(Color.WHITE);
 	}
 
 	public static void main(String[] args) {
