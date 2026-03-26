@@ -2,6 +2,7 @@ package battleship.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class Board {
 	private Node[][] grid;
@@ -23,7 +24,30 @@ public class Board {
 	public Node[][] getGrid() {
 		return grid;
 	}
+	
+	// Đặt tàu (random cho máy)
+		public void setUpShip(Board modelBoard) {
+			Random rd = new Random();
+			int[] lengths = { 5, 4, 3, 3, 2 };
 
+			for (int len : lengths) {
+				boolean placed = false;
+				while (!placed) {
+					int r = rd.nextInt(9);
+					int c = rd.nextInt(9);
+					int dir = rd.nextInt(2);
+
+					if (modelBoard.canPlaceShip(len, r, c, dir)) {
+						Ship s = new Ship(len);
+						s.setLocation(r, c);
+						s.setDirection(dir);
+						modelBoard.placeShip(s);
+						placed = true;
+					}
+				}
+			}
+		}
+	
 	// Kiểm tra có thể đặt tàu không ?
 	public boolean canPlaceShip(int length, int row, int col, int direction) {
 		for (int i = 0; i < length; i++) {

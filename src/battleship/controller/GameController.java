@@ -32,35 +32,12 @@ public class GameController {
 		this.p1view = p1view;
 		this.p2view = p2view;
 
-		setUpShip(this.p1board);
-		setUpShip(this.p2board);
+		p1board.setUpShip(this.p1board); // thêm vào option phần di chuyển tàu , thêm phần di đặt tàu
+		p2board.setUpShip(this.p2board); // giữ nguyên được
 
 		showP1Ships();
 
 		setupMouseClicks();
-	}
-
-	// Đặt tàu (random cho máy)
-	public void setUpShip(Board modelBoard) {
-		Random rd = new Random();
-		int[] lengths = { 5, 4, 3, 3, 2 };
-
-		for (int len : lengths) {
-			boolean placed = false;
-			while (!placed) {
-				int r = rd.nextInt(9);
-				int c = rd.nextInt(9);
-				int dir = rd.nextInt(2);
-
-				if (modelBoard.canPlaceShip(len, r, c, dir)) {
-					Ship s = new Ship(len);
-					s.setLocation(r, c);
-					s.setDirection(dir);
-					modelBoard.placeShip(s);
-					placed = true;
-				}
-			}
-		}
 	}
 
 	// Hiện tàu của người chơi
@@ -110,6 +87,16 @@ public class GameController {
 							if (p2board.isSunkAt(row, col)) {
 								System.out
 										.println("Bạn đã bắn chìm tàu " + p2board.lengthShipIs(row, col) + " của máy");
+
+								p2board.markShipAsSunk(row, col, p2board.getGrid());
+
+								for (int i = 0; i < 10; i++) {
+									for (int j = 0; j < 10; j++) {
+										if (p2board.getGrid()[i][j].getVal() == Node.SUNK) {
+											p2view.markButtonAsSunk(i, j);
+										}
+									}
+								}
 							}
 						} else {
 							if (!isGameOver) {
@@ -139,9 +126,7 @@ public class GameController {
 		timer.setRepeats(false);
 		timer.start();
 	}
-	
-	
-	
+
 	private void botFire_EASY() {
 		if (isGameOver)
 			return;

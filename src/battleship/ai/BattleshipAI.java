@@ -186,13 +186,13 @@ public class BattleshipAI {
 		int r = targetNode.getX();
 		int c = targetNode.getY();
 
-		if (r - 1 >= 0 && p1Grid[r - 1][c].getVal() != Node.HIT && p1Grid[r - 1][c].getVal() != Node.MISS)
+		if (r - 1 >= 0 && p1Grid[r - 1][c].getVal() != Node.HIT && p1Grid[r - 1][c].getVal() != Node.MISS && p1Grid[r - 1][c].getVal() != Node.SUNK)
 			validTargets.add(p1Grid[r - 1][c]);
-		if (r + 1 < 10 && p1Grid[r + 1][c].getVal() != Node.HIT && p1Grid[r + 1][c].getVal() != Node.MISS)
+		if (r + 1 < 10 && p1Grid[r + 1][c].getVal() != Node.HIT && p1Grid[r + 1][c].getVal() != Node.MISS && p1Grid[r + 1][c].getVal() != Node.SUNK)
 			validTargets.add(p1Grid[r + 1][c]);
-		if (c - 1 >= 0 && p1Grid[r][c - 1].getVal() != Node.HIT && p1Grid[r][c - 1].getVal() != Node.MISS)
+		if (c - 1 >= 0 && p1Grid[r][c - 1].getVal() != Node.HIT && p1Grid[r][c - 1].getVal() != Node.MISS && p1Grid[r][c - 1].getVal() != Node.SUNK)
 			validTargets.add(p1Grid[r][c - 1]);
-		if (c + 1 < 10 && p1Grid[r][c + 1].getVal() != Node.HIT && p1Grid[r][c + 1].getVal() != Node.MISS)
+		if (c + 1 < 10 && p1Grid[r][c + 1].getVal() != Node.HIT && p1Grid[r][c + 1].getVal() != Node.MISS && p1Grid[r][c + 1].getVal() != Node.SUNK)
 			validTargets.add(p1Grid[r][c + 1]);
 
 		if (!validTargets.isEmpty()) {
@@ -209,14 +209,14 @@ public class BattleshipAI {
 		List<Node> validTargets = new ArrayList<>();
 
 		if (dirShip == Ship.HORIZONTAL) {
-			if (c - 1 >= 0 && p1Grid[r][c - 1].getVal() != Node.HIT && p1Grid[r][c - 1].getVal() != Node.MISS)
+			if (c - 1 >= 0 && p1Grid[r][c - 1].getVal() != Node.HIT && p1Grid[r][c - 1].getVal() != Node.MISS && p1Grid[r][c - 1].getVal() != Node.SUNK)
 				validTargets.add(p1Grid[r][c - 1]);
-			if (c + 1 < 10 && p1Grid[r][c + 1].getVal() != Node.HIT && p1Grid[r][c + 1].getVal() != Node.MISS)
+			if (c + 1 < 10 && p1Grid[r][c + 1].getVal() != Node.HIT && p1Grid[r][c + 1].getVal() != Node.MISS && p1Grid[r][c + 1].getVal() != Node.SUNK)
 				validTargets.add(p1Grid[r][c + 1]);
 		} else if (dirShip == Ship.VERTICAl) {
-			if (r - 1 >= 0 && p1Grid[r - 1][c].getVal() != Node.HIT && p1Grid[r - 1][c].getVal() != Node.MISS)
+			if (r - 1 >= 0 && p1Grid[r - 1][c].getVal() != Node.HIT && p1Grid[r - 1][c].getVal() != Node.MISS && p1Grid[r - 1][c].getVal() != Node.SUNK)
 				validTargets.add(p1Grid[r - 1][c]);
-			if (r + 1 < 10 && p1Grid[r + 1][c].getVal() != Node.HIT && p1Grid[r + 1][c].getVal() != Node.MISS)
+			if (r + 1 < 10 && p1Grid[r + 1][c].getVal() != Node.HIT && p1Grid[r + 1][c].getVal() != Node.MISS && p1Grid[r + 1][c].getVal() != Node.SUNK)
 				validTargets.add(p1Grid[r + 1][c]);
 		}
 
