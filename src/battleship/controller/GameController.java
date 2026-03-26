@@ -139,7 +139,9 @@ public class GameController {
 		timer.setRepeats(false);
 		timer.start();
 	}
-
+	
+	
+	
 	private void botFire_EASY() {
 		if (isGameOver)
 			return;

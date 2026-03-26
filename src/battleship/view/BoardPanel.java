@@ -35,17 +35,16 @@ public class BoardPanel extends JPanel {
 		buttons[row][col].setEnabled(false); // Bắn rồi thì khóa nút lại, cấm bấm tiếp
 	}
 
-	
 	public JButton getButton(int row, int col) {
 		return buttons[row][col];
 	}
-	
+
 	public void markButtonAsSunk(int row, int col) {
-		buttons[row][col].setBackground(Color.BLACK); 
-		buttons[row][col].setText("☠"); 
+		buttons[row][col].setBackground(Color.BLACK);
+		buttons[row][col].setText("☠");
 		buttons[row][col].setForeground(Color.WHITE);
 	}
-	
+
 	public static void main(String[] args) {
 	}
 }

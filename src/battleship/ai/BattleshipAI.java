@@ -17,7 +17,7 @@ public class BattleshipAI {
 	public static final int MEDIUM = 2;
 	public static final int HARD = 3;
 
-	// 1. HÀM QUYẾT ĐỊNH MỤC TIÊU BẮN
+	// HÀM QUYẾT ĐỊNH MỤC TIÊU BẮN
 	public Node determineTarget(Board p1board, Integer level, List<Integer> aliveShips) {
 		Node[][] p1Grid = p1board.getGrid();
 		Node targetNode = null;
@@ -49,8 +49,8 @@ public class BattleshipAI {
 		}
 		return targetNode;
 	}
-
-	// 2. HÀM CẬP NHẬT TRÍ NHỚ SAU KHI BẮN
+	
+	// HÀM CẬP NHẬT TRÍ NHỚ SAU KHI BẮN
 	public void updateAfterFire(Board p1board, Node targetNode, boolean isHit) {
 		if (isHit) {
 			hitLocation.add(targetNode);
@@ -69,7 +69,7 @@ public class BattleshipAI {
 		}
 	}
 
-	// chọn mục tiêu cho bản đồ nhiệt
+	// họn mục tiêu cho bản đồ nhiệt
 	public Node targetHeatMap(Node[][] p1Grid, List<Integer> aliveShips) {
 		int[][] heatmap = new int[10][10];
 		Node targetNode = null;
@@ -161,7 +161,8 @@ public class BattleshipAI {
 			targetNode = p1Grid[r][c];
 			targetNode = p1Grid[r][c];
 			attempts++;
-		} while (targetNode.getVal() == Node.HIT || targetNode.getVal() == Node.MISS || targetNode.getVal() == Node.SUNK);
+		} while (targetNode.getVal() == Node.HIT || targetNode.getVal() == Node.MISS
+				|| targetNode.getVal() == Node.SUNK);
 		return targetNode;
 	}
 
