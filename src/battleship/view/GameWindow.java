@@ -1,40 +1,12 @@
 package battleship.view;
 
-import java.awt.CardLayout;
-import java.awt.Dimension;
+public class GameWindow {
+	//Chuyển phần giao diện tạm thời bên main sửa sang bên này 
+	// Thêm phần giao diện ở đây
+	
+	//Controller làm việc của Model (Tính toán dữ liệu): Hàm setUpShip() sử dụng Random để dò tìm vị trí và đặt tàu. Theo lý thuyết, việc khởi tạo trạng thái dữ liệu (đặt tàu ở đâu) phải nằm trong Model (Board.java). Controller chỉ nên gọi p1board.autoPlaceShips().
 
-import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
+	//Controller làm việc của View (Xử lý giao diện): Hàm showP1Ships() trực tiếp gọi setBackground(Color.DARK_GRAY) và setText("Tàu"). Nguyên tắc là Controller không được phép biết màu sắc hay text hiển thị là gì. Lẽ ra View phải tự có hàm drawShipAt(x, y) và Controller chỉ gọi hàm đó.
 
-public class GameWindow extends JFrame {
-	private static final long serialVersionUID = 1L;
-
-	public static final String SCREEN_MENU = "menu";
-	public static final String SCREEN_DIFFICULTY = "difficulty";
-	public static final String SCREEN_SETUP = "setup";
-	public static final String SCREEN_BATTLE = "battle";
-
-	private final CardLayout cardLayout;
-	private final JPanel cardPanel;
-
-	public GameWindow(String title) {
-		super(title);
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setMinimumSize(new Dimension(960, 720));
-		setLocationRelativeTo(null);
-		setResizable(true);
-
-		cardLayout = new CardLayout();
-		cardPanel = new JPanel(cardLayout);
-		setContentPane(cardPanel);
-	}
-
-	public void addScreen(String key, JComponent component) {
-		cardPanel.add(component, key);
-	}
-
-	public void showScreen(String key) {
-		cardLayout.show(cardPanel, key);
-	}
+	//Chứa thư viện UI: Việc Controller trực tiếp gọi JOptionPane.showMessageDialog khiến nó bị dính chặt với thư viện giao diện Swing.
 }
