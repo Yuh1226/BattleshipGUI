@@ -3,6 +3,8 @@ package battleship.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import battleship.model.*;
+
 public class Board {
 	private Node[][] grid;
 
@@ -52,7 +54,7 @@ public class Board {
 		}
 		fleet.add(s);
 	}
-
+	
 	// Kiểm tra vị trí bắn
 	public boolean fireAt(int row, int col) {
 		Node target = grid[row][col];
@@ -71,8 +73,8 @@ public class Board {
 			int r = s.getRow();
 			int c = s.getCol();
 			boolean isTargetShip = false;
-			
-			//Ktra tàu đã bị bắn chưa
+
+			// Ktra tàu đã bị bắn chưa
 			for (int i = 0; i < s.getLength(); i++) {
 				int checkR = r + (s.getDirection() == Ship.VERTICAl ? i : 0);
 				int checkC = c + (s.getDirection() == Ship.HORIZONTAL ? i : 0);
@@ -81,7 +83,7 @@ public class Board {
 					break;
 				}
 			}
-			//Ktra tàu đã bị bắn hết chưa
+			// Ktra tàu đã bị bắn hết chưa
 			if (isTargetShip) {
 				for (int i = 0; i < s.getLength(); i++) {
 					int checkR = r + (s.getDirection() == Ship.VERTICAl ? i : 0);
@@ -96,12 +98,41 @@ public class Board {
 		return false;
 	}
 	
+	// Hàm biến các ô HIT thành SUNK khi tàu chìm
+		public void markShipAsSunk(int row, int col, Node[][] p1Grid) {
+			for (Ship s : fleet) {
+				int r = s.getRow();
+				int c = s.getCol();
+				boolean isTargetShip = false;
+				
+				// Tìm xem phát đạn (row, col) này thuộc về con tàu nào
+				for (int i = 0; i < s.getLength(); i++) {
+					int checkR = r + (s.getDirection() == Ship.VERTICAl ? i : 0);
+					int checkC = c + (s.getDirection() == Ship.HORIZONTAL ? i : 0);
+					if (checkR == row && checkC == col) {
+						isTargetShip = true;
+						break;
+					}
+				}
+				
+				// Nếu tìm thấy, đổi toàn bộ các ô của tàu đó thành SUNK
+				if (isTargetShip) {
+					for (int i = 0; i < s.getLength(); i++) {
+						int checkR = r + (s.getDirection() == Ship.VERTICAl ? i : 0);
+						int checkC = c + (s.getDirection() == Ship.HORIZONTAL ? i : 0);
+						p1Grid[checkR][checkC].setVal(Node.SUNK);
+					}
+					break;
+				}
+			}
+		}
+
 	public int lengthShipIs(int row, int col) {
 		for (Ship s : fleet) {
 			int r = s.getRow();
 			int c = s.getCol();
-			
-			//Ktra tàu đã bị bắn chưa
+
+			// Ktra tàu đã bị bắn chưa
 			for (int i = 0; i < s.getLength(); i++) {
 				int checkR = r + (s.getDirection() == Ship.VERTICAl ? i : 0);
 				int checkC = c + (s.getDirection() == Ship.HORIZONTAL ? i : 0);
@@ -112,7 +143,7 @@ public class Board {
 		}
 		return 0;
 	}
-	
+
 	public static void main(String[] args) {
 	}
 }

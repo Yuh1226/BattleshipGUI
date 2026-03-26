@@ -22,10 +22,9 @@ public class GameController {
 	private int p2Hits = 0;
 	private final int Win_Score = 17;
 	private boolean isGameOver = false;
-	private Stack<Node> hitLocation = new Stack<>();
-	private int dirShip = Ship.UNSET;
 	private boolean isBotThinking = false;
 	private BattleshipAI botAI = new BattleshipAI();
+	private List<Integer> aliveShips = new ArrayList<>(Arrays.asList(5, 4, 3, 3, 2));
 
 	public GameController(Board p1board, Board p2board, BoardPanel p1view, BoardPanel p2view) {
 		this.p1board = p1board;
@@ -108,10 +107,15 @@ public class GameController {
 						if (isHit) {
 							p1Hits++;
 							checkWinCondition();
+							if (p2board.isSunkAt(row, col)) {
+								System.out
+										.println("Bạn đã bắn chìm tàu " + p2board.lengthShipIs(row, col) + " của máy");
+							}
 						} else {
 							if (!isGameOver) {
 //								botFire_EASY();
 //								botFire_MEDIUM();
+//								botFire_HARD();
 								delayedBotFire();
 							}
 						}
@@ -127,7 +131,9 @@ public class GameController {
 		javax.swing.Timer timer = new javax.swing.Timer(1000, new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				botFire_MEDIUM();
+//				botFire_EASY;
+//				botFire_MEDIUM();
+				botFire_HARD();
 			}
 		});
 		timer.setRepeats(false);
@@ -135,33 +141,10 @@ public class GameController {
 	}
 
 	private void botFire_EASY() {
-		Random rd = new Random();
-		int r, c;
-		Node targetNode;
-		Node[][] p1Grid = p1board.getGrid();
-		boolean isHit;
-
-		do {
-			r = rd.nextInt(10);
-			c = rd.nextInt(10);
-			targetNode = p1Grid[r][c];
-		} while (targetNode.getVal() == Node.HIT || targetNode.getVal() == Node.MISS);
-
-		isHit = p1board.fireAt(r, c);
-		p1view.updateButtonState(r, c, isHit);
-
-		if (isHit) {
-			p2Hits++;
-			checkWinCondition();
-			botFire_EASY();
-		}
-	}
-
-	private void botFire_MEDIUM() {
-		if (isGameOver) return;
-
+		if (isGameOver)
+			return;
 		// 1. Xin tọa độ từ Bot AI
-		Node targetNode = botAI.determineTarget(p1board);
+		Node targetNode = botAI.determineTarget(p1board, BattleshipAI.EASY, aliveShips);
 		int r = targetNode.getX();
 		int c = targetNode.getY();
 
@@ -172,14 +155,86 @@ public class GameController {
 		if (isHit) {
 			p2Hits++;
 			checkWinCondition();
-			
-			// In ra console nếu chìm tàu (isSunkAt phải gọi trước khi AI xóa memory)
+			// In ra console nếu chìm tàu (isSunkAt phải gọi trước khi Bot xóa memory)
 			if (p1board.isSunkAt(r, c)) {
-				System.out.println("Bot đã bắn chìm 1 tàu của bạn");
+				System.out.println("Bot đã bắn chìm tàu " + p1board.lengthShipIs(r, c) + " của bạn");
 			}
 
-			// 3. Cập nhật lại kết quả cho AI nhớ
+			botFire_EASY();
+		}
+	}
+
+	private void botFire_MEDIUM() {
+		if (isGameOver)
+			return;
+
+		// 1. Xin tọa độ từ Bot AI
+		Node targetNode = botAI.determineTarget(p1board, BattleshipAI.MEDIUM, aliveShips);
+		int r = targetNode.getX();
+		int c = targetNode.getY();
+
+		// 2. Tiến hành nổ súng
+		boolean isHit = p1board.fireAt(r, c);
+		p1view.updateButtonState(r, c, isHit);
+
+		if (isHit) {
+			p2Hits++;
+			checkWinCondition();
+
+			// In ra console nếu chìm tàu (isSunkAt phải gọi trước khi Bot xóa memory)
+			if (p1board.isSunkAt(r, c)) {
+				System.out.println("Bot đã bắn chìm tàu " + p1board.lengthShipIs(r, c) + " của bạn");
+			}
+
+			// 3. Cập nhật lại kết quả cho Bot nhớ
 			botAI.updateAfterFire(p1board, targetNode, isHit);
+
+			if (!isGameOver) {
+				delayedBotFire();
+			} else {
+				isBotThinking = false; // Game over thì mở khóa
+			}
+		} else {
+			isBotThinking = false; // Bắn trượt mở khóa cho người chơi
+		}
+	}
+
+	private void botFire_HARD() {
+		if (isGameOver)
+			return;
+
+		// 1. Xin tọa độ từ Bot AI
+		Node targetNode = botAI.determineTarget(p1board, BattleshipAI.HARD, aliveShips);
+		int r = targetNode.getX();
+		int c = targetNode.getY();
+		Node[][] p1Grid = p1board.getGrid();
+
+		// 2. Tiến hành nổ súng
+		boolean isHit = p1board.fireAt(r, c);
+		p1view.updateButtonState(r, c, isHit);
+
+		if (isHit) {
+			p2Hits++;
+			checkWinCondition();
+
+			// Cập nhật lại kết quả cho Bot nhớ
+			botAI.updateAfterFire(p1board, targetNode, isHit);
+
+			// In ra console nếu chìm tàu (isSunkAt phải gọi trước khi Bot xóa memory)
+			if (p1board.isSunkAt(r, c)) {
+				int lengthShip = p1board.lengthShipIs(r, c);
+				aliveShips.remove(Integer.valueOf(lengthShip));
+				p1board.markShipAsSunk(r, c, p1Grid);
+				System.out.println("Bot đã bắn chìm tàu " + lengthShip + " của bạn");
+
+				for (int i = 0; i < 10; i++) {
+					for (int j = 0; j < 10; j++) {
+						if (p1board.getGrid()[i][j].getVal() == Node.SUNK) {
+							p1view.markButtonAsSunk(i, j);
+						}
+					}
+				}
+			}
 
 			if (!isGameOver) {
 				delayedBotFire();

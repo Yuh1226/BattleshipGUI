@@ -9,6 +9,7 @@ public class Node {
 	public static final int SHIP = 1; // Có tàu
 	public static final int HIT = 2; // Tàu bị bắn trúng
 	public static final int MISS = 3; // Bắn trượt xuống nước
+	public static final int SUNK = 4; // Tàu đã bị chìm
 
 	public Node(int x, int y, int val) {
 		this.x = x;
@@ -40,15 +41,4 @@ public class Node {
 		this.val = val;
 	}
 
-//	public String toString() {
-//		if (val == EMPTY) {
-//			return " ";
-//		} else if (val == SHIP) {
-//			return "█";
-//		} else if (val == HIT) {
-//			return "X";
-//		} else {
-//			return "O";
-//		}
-//	}
 }
