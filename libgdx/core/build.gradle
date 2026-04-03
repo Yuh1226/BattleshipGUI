@@ -1,0 +1,11 @@
+dependencies {
+	implementation "com.badlogicgames.gdx:gdx:$gdxVersion"
+}
+
+sourceSets {
+	main {
+		java {
+			srcDirs = ["src"]
+		}
+	}
+}
