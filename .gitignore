@@ -1,8 +1,17 @@
 /bin/
 
+# Java/Gradle
 *.class
 *.jar
 *.war
+*.log
+**/build/
+**/.gradle/
 
-.settings/
+# IDE
+.classpath
 .project
+.settings/
+.idea/
+*.iml
+.vscode/

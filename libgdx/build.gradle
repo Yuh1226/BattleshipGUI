@@ -1,0 +1,23 @@
+buildscript {
+	repositories {
+		mavenCentral()
+	}
+}
+
+allprojects {
+	repositories {
+		mavenCentral()
+	}
+}
+
+ext {
+	gdxVersion = "1.12.1"
+}
+
+subprojects {
+	apply plugin: "java"
+	java {
+		sourceCompatibility = JavaVersion.VERSION_11
+		targetCompatibility = JavaVersion.VERSION_11
+	}
+}
