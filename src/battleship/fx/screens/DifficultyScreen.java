@@ -35,15 +35,6 @@ public class DifficultyScreen extends VBox {
         setPadding(new Insets(20, 40, 40, 40));
         getStyleClass().add("screen-root");
 
-        // Top bar for settings
-        HBox topBar = new HBox();
-        topBar.setAlignment(Pos.TOP_RIGHT);
-        Button settingsBtn = new Button("⚙");
-        settingsBtn.getStyleClass().add("secondary-button");
-        settingsBtn.setStyle("-fx-font-size: 18px; -fx-padding: 5 10;");
-        settingsBtn.setOnAction(e -> { if(listener != null) listener.onOpenSettings(); });
-        topBar.getChildren().add(settingsBtn);
-
         titleLabel.getStyleClass().add("screen-title");
 
         HBox buttons = new HBox(12);
@@ -66,7 +57,7 @@ public class DifficultyScreen extends VBox {
             }
         });
 
-        getChildren().addAll(topBar, titleLabel, buttons, backBtn);
+        getChildren().addAll(titleLabel, buttons, backBtn);
         updateLanguage();
     }
 

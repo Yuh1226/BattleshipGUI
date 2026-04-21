@@ -43,15 +43,6 @@ public class SetupScreen extends VBox {
         setPadding(new Insets(5, 20, 10, 20));
         getStyleClass().add("screen-root");
 
-        // Top bar for settings
-        HBox topBar = new HBox();
-        topBar.setAlignment(Pos.TOP_RIGHT);
-        Button settingsBtn = new Button("⚙");
-        settingsBtn.getStyleClass().add("secondary-button");
-        settingsBtn.setStyle("-fx-font-size: 14px; -fx-padding: 2 6;");
-        settingsBtn.setOnAction(e -> { for(Listener l : listeners) l.onOpenSettings(); });
-        topBar.getChildren().add(settingsBtn);
-
         titleLabel.getStyleClass().add("screen-title");
         hintLabel.getStyleClass().add("screen-subtitle");
 
@@ -112,7 +103,7 @@ public class SetupScreen extends VBox {
         HBox boardWrapper = new HBox(setupBoard);
         boardWrapper.setAlignment(Pos.CENTER);
         
-        getChildren().addAll(topBar, titleLabel, hintLabel, statusLabel, boardWrapper, shipSelection, controlButtons, actions);
+        getChildren().addAll(titleLabel, hintLabel, statusLabel, boardWrapper, shipSelection, controlButtons, actions);
         updateLanguage();
     }
 

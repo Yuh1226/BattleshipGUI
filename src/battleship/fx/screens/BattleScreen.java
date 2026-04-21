@@ -39,22 +39,13 @@ public class BattleScreen extends BorderPane {
         getStyleClass().add("screen-root");
         setPadding(new Insets(10, 20, 10, 20));
 
-        // TOP: Title and Settings
+        // TOP: Title
         HBox topBar = new HBox();
         topBar.setAlignment(Pos.CENTER);
         Label titleLabel = new Label("COMBAT ZONE");
         titleLabel.getStyleClass().add("screen-title");
         
-        HBox rightTop = new HBox();
-        rightTop.setAlignment(Pos.CENTER_RIGHT);
-        Button settingsBtn = new Button("⚙");
-        settingsBtn.getStyleClass().add("secondary-button");
-        settingsBtn.setStyle("-fx-font-size: 14px; -fx-padding: 2 6;");
-        settingsBtn.setOnAction(e -> { if(listener != null) listener.onOpenSettings(); });
-        rightTop.getChildren().add(settingsBtn);
-        HBox.setHgrow(rightTop, Priority.ALWAYS);
-
-        topBar.getChildren().addAll(new Label("      "), titleLabel, rightTop); // Padding for center alignment
+        topBar.getChildren().add(titleLabel);
         setTop(topBar);
 
         // CENTER: Boards

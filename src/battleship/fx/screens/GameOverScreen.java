@@ -37,15 +37,6 @@ public class GameOverScreen extends VBox {
         setPadding(new Insets(10, 40, 40, 40));
         getStyleClass().add("screen-root");
 
-        // Top bar for settings
-        javafx.scene.layout.HBox topBar = new javafx.scene.layout.HBox();
-        topBar.setAlignment(Pos.TOP_RIGHT);
-        Button settingsBtn = new Button("⚙");
-        settingsBtn.getStyleClass().add("secondary-button");
-        settingsBtn.setStyle("-fx-font-size: 18px; -fx-padding: 5 10;");
-        settingsBtn.setOnAction(e -> { if(listener != null) listener.onOpenSettings(); });
-        topBar.getChildren().add(settingsBtn);
-
         titleLabel.getStyleClass().add("screen-title");
         resultLabel.getStyleClass().add("status-emphasis");
 
@@ -79,7 +70,7 @@ public class GameOverScreen extends VBox {
 
         buttons.getChildren().addAll(againBtn, menuBtn);
 
-        getChildren().addAll(topBar, titleLabel, resultLabel, statsPane, buttons);
+        getChildren().addAll(titleLabel, resultLabel, statsPane, buttons);
         updateLanguage();
     }
 

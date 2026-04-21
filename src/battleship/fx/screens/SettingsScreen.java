@@ -14,6 +14,7 @@ import javafx.scene.layout.VBox;
 public class SettingsScreen extends VBox {
     public interface Listener {
         void onBack();
+        void onBackToMenu();
         void onLanguageChanged(String lang);
         void onSoundToggled(boolean enabled);
         void onVolumeChanged(double volume);
@@ -27,11 +28,12 @@ public class SettingsScreen extends VBox {
     private final CheckBox soundCheck = new CheckBox();
     private final Slider volumeSlider = new Slider(0, 100, 75);
     private final Button backButton = new Button();
+    private final Button menuButton = new Button();
 
     public SettingsScreen() {
         setAlignment(Pos.CENTER);
-        setSpacing(30);
-        setPadding(new Insets(50));
+        setSpacing(20);
+        setPadding(new Insets(40));
         getStyleClass().add("screen-root");
 
         titleLabel.getStyleClass().add("screen-title");
@@ -87,15 +89,28 @@ public class SettingsScreen extends VBox {
         settingsGrid.add(audioLabel, 0, 1);
         settingsGrid.add(audioBox, 1, 1);
 
-        backButton.setPrefWidth(200);
-        backButton.getStyleClass().add("secondary-button");
+        VBox bottomButtons = new VBox(10);
+        bottomButtons.setAlignment(Pos.CENTER);
+
+        backButton.setPrefWidth(220);
+        backButton.getStyleClass().add("action-button");
         backButton.setOnAction(event -> {
             if (listener != null) {
                 listener.onBack();
             }
         });
 
-        getChildren().addAll(titleLabel, settingsGrid, backButton);
+        menuButton.setPrefWidth(220);
+        menuButton.getStyleClass().add("secondary-button");
+        menuButton.setOnAction(event -> {
+            if (listener != null) {
+                listener.onBackToMenu();
+            }
+        });
+
+        bottomButtons.getChildren().addAll(backButton, menuButton);
+
+        getChildren().addAll(titleLabel, settingsGrid, bottomButtons);
         updateLanguage();
     }
 
@@ -105,6 +120,7 @@ public class SettingsScreen extends VBox {
         audioLabel.setText(LocalizationManager.get("audio_label"));
         soundCheck.setText(LocalizationManager.get("enable_sound"));
         backButton.setText(LocalizationManager.get("back"));
+        menuButton.setText(LocalizationManager.get("back_to_menu"));
     }
 
     public void setListener(Listener listener) {

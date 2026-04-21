@@ -19,6 +19,7 @@ public class LocalizationManager {
     static {
         // Common
         add("back", "Back", "Quay lại");
+        add("back_to_menu", "Main Menu", "Menu chính");
         add("cancel", "Cancel", "Hủy");
         add("continue", "Continue", "Tiếp tục");
         add("settings", "Settings", "Cài đặt");
