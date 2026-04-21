@@ -1,6 +1,7 @@
 package battleship.fx.screens;
 
 import battleship.fx.LocalizationManager;
+import battleship.fx.AudioManager;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -10,6 +11,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.layout.HBox;
 
 public class SettingsScreen extends VBox {
     public interface Listener {
@@ -17,16 +19,22 @@ public class SettingsScreen extends VBox {
         void onBackToMenu();
         void onLanguageChanged(String lang);
         void onSoundToggled(boolean enabled);
-        void onVolumeChanged(double volume);
+        void onMusicVolumeChanged(double volume);
+        void onSfxVolumeChanged(double volume);
     }
 
     private Listener listener;
     private final Label titleLabel = new Label();
     private final Label langLabel = new Label();
     private final Label audioLabel = new Label();
+    private final Label musicLabel = new Label();
+    private final Label sfxLabel = new Label();
+    
     private final ComboBox<String> languageCombo = new ComboBox<>();
     private final CheckBox soundCheck = new CheckBox();
-    private final Slider volumeSlider = new Slider(0, 100, 75);
+    private final Slider musicSlider = new Slider(0, 100, 75);
+    private final Slider sfxSlider = new Slider(0, 100, 75);
+    
     private final Button backButton = new Button();
     private final Button menuButton = new Button();
 
@@ -41,7 +49,7 @@ public class SettingsScreen extends VBox {
         GridPane settingsGrid = new GridPane();
         settingsGrid.setAlignment(Pos.CENTER);
         settingsGrid.setHgap(30);
-        settingsGrid.setVgap(25);
+        settingsGrid.setVgap(20);
         settingsGrid.getStyleClass().add("settings-container");
         settingsGrid.setPadding(new Insets(30));
 
@@ -66,28 +74,42 @@ public class SettingsScreen extends VBox {
         settingsGrid.add(langLabel, 0, 0);
         settingsGrid.add(languageCombo, 1, 0);
 
-        // Sound
+        // Sound Toggle
         audioLabel.getStyleClass().add("stat-label");
-        
-        soundCheck.setSelected(true);
+        soundCheck.setSelected(AudioManager.getInstance().isSoundEnabled());
         soundCheck.getStyleClass().add("settings-check");
         soundCheck.setOnAction(e -> {
-            volumeSlider.setDisable(!soundCheck.isSelected());
-            if (listener != null) listener.onSoundToggled(soundCheck.isSelected());
+            boolean enabled = soundCheck.isSelected();
+            musicSlider.setDisable(!enabled);
+            sfxSlider.setDisable(!enabled);
+            if (listener != null) listener.onSoundToggled(enabled);
         });
-
-        VBox audioBox = new VBox(10, soundCheck, volumeSlider);
-        audioBox.setAlignment(Pos.CENTER_LEFT);
-        
-        volumeSlider.setShowTickLabels(false);
-        volumeSlider.setShowTickMarks(false);
-        volumeSlider.setPrefWidth(200);
-        volumeSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
-            if (listener != null) listener.onVolumeChanged(newVal.doubleValue());
-        });
-
         settingsGrid.add(audioLabel, 0, 1);
-        settingsGrid.add(audioBox, 1, 1);
+        settingsGrid.add(soundCheck, 1, 1);
+
+        // Music Volume
+        musicLabel.getStyleClass().add("stat-label");
+        musicSlider.setValue(AudioManager.getInstance().getMusicVolume());
+        musicSlider.setPrefWidth(200);
+        musicSlider.setDisable(!soundCheck.isSelected());
+        musicSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (listener != null) listener.onMusicVolumeChanged(newVal.doubleValue());
+        });
+        
+        VBox musicBox = new VBox(5, musicLabel, musicSlider);
+        settingsGrid.add(musicBox, 0, 2);
+
+        // SFX Volume
+        sfxLabel.getStyleClass().add("stat-label");
+        sfxSlider.setValue(AudioManager.getInstance().getSfxVolume());
+        sfxSlider.setPrefWidth(200);
+        sfxSlider.setDisable(!soundCheck.isSelected());
+        sfxSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (listener != null) listener.onSfxVolumeChanged(newVal.doubleValue());
+        });
+
+        VBox sfxBox = new VBox(5, sfxLabel, sfxSlider);
+        settingsGrid.add(sfxBox, 1, 2);
 
         VBox bottomButtons = new VBox(10);
         bottomButtons.setAlignment(Pos.CENTER);
@@ -119,6 +141,8 @@ public class SettingsScreen extends VBox {
         langLabel.setText(LocalizationManager.get("lang_label"));
         audioLabel.setText(LocalizationManager.get("audio_label"));
         soundCheck.setText(LocalizationManager.get("enable_sound"));
+        musicLabel.setText(LocalizationManager.get("music_volume"));
+        sfxLabel.setText(LocalizationManager.get("sfx_volume"));
         backButton.setText(LocalizationManager.get("back"));
         menuButton.setText(LocalizationManager.get("return_hq"));
     }

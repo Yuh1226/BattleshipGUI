@@ -2,6 +2,7 @@ package battleship;
 
 import battleship.ai.BattleshipAI;
 import battleship.fx.FxGameController;
+import battleship.fx.AudioManager;
 import battleship.fx.LocalizationManager;
 import battleship.fx.ScreenManager;
 import battleship.fx.screens.BattleScreen;
@@ -10,6 +11,7 @@ import battleship.fx.screens.GameOverScreen;
 import battleship.fx.screens.MenuScreen;
 import battleship.fx.screens.SettingsScreen;
 import battleship.fx.screens.SetupScreen;
+import battleship.fx.screens.HelpScreen;
 import battleship.model.Board;
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -22,6 +24,7 @@ public class Main extends Application {
 	public static final String SCREEN_BATTLE = "battle";
 	public static final String SCREEN_GAME_OVER = "gameover";
 	public static final String SCREEN_SETTINGS = "settings";
+	public static final String SCREEN_HELP = "help";
 
 	private MenuScreen menuScreen;
 	private DifficultyScreen difficultyScreen;
@@ -29,6 +32,7 @@ public class Main extends Application {
 	private BattleScreen battleScreen;
 	private GameOverScreen gameOverScreen;
 	private SettingsScreen settingsScreen;
+	private HelpScreen helpScreen;
 	private String previousScreen = SCREEN_MENU;
 	private javafx.scene.control.Button globalSettingsBtn;
 
@@ -44,6 +48,7 @@ public class Main extends Application {
 		battleScreen = new BattleScreen();
 		gameOverScreen = new GameOverScreen();
 		settingsScreen = new SettingsScreen();
+		helpScreen = new HelpScreen();
 		FxGameController controller = new FxGameController(p1board, p2board, setupScreen, battleScreen);
 
 		screenManager.addScreen(SCREEN_MENU, menuScreen);
@@ -52,6 +57,7 @@ public class Main extends Application {
 		screenManager.addScreen(SCREEN_BATTLE, battleScreen);
 		screenManager.addScreen(SCREEN_GAME_OVER, gameOverScreen);
 		screenManager.addScreen(SCREEN_SETTINGS, settingsScreen);
+		screenManager.addScreen(SCREEN_HELP, helpScreen);
 
 		// Global Settings Button
 		globalSettingsBtn = new javafx.scene.control.Button("⚙");
@@ -73,6 +79,15 @@ public class Main extends Application {
 			public void onSettings() {
 				openSettings(screenManager, SCREEN_MENU);
 			}
+
+			@Override
+			public void onHelp() {
+				showScreen(screenManager, SCREEN_HELP);
+			}
+		});
+
+		helpScreen.setListener(() -> {
+			showScreen(screenManager, SCREEN_MENU);
 		});
 
 		settingsScreen.setListener(new SettingsScreen.Listener() {
@@ -93,10 +108,17 @@ public class Main extends Application {
 
 			@Override
 			public void onSoundToggled(boolean enabled) {
+				AudioManager.getInstance().setSoundEnabled(enabled);
 			}
 
 			@Override
-			public void onVolumeChanged(double volume) {
+			public void onMusicVolumeChanged(double volume) {
+				AudioManager.getInstance().setMusicVolume(volume);
+			}
+
+			@Override
+			public void onSfxVolumeChanged(double volume) {
+				AudioManager.getInstance().setSfxVolume(volume);
 			}
 		});
 
@@ -201,6 +223,9 @@ public class Main extends Application {
 		stage.setTitle("Battleship");
 		stage.setScene(scene);
 		stage.show();
+
+		// Start Background Music
+		AudioManager.getInstance().playBackgroundMusic();
 	}
 
 	private String currentScreen;
@@ -223,6 +248,7 @@ public class Main extends Application {
 		battleScreen.updateLanguage();
 		gameOverScreen.updateLanguage();
 		settingsScreen.updateLanguage();
+		helpScreen.updateLanguage();
 	}
 
 	private void openSettings(ScreenManager sm, String from) {
