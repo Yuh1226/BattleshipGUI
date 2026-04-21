@@ -28,6 +28,7 @@ public class BattleScreen extends BorderPane {
     private final Label statusLabel = new Label();
     private final Label timerLabel = new Label("30s");
     private final javafx.scene.control.ProgressBar timerProgress = new javafx.scene.control.ProgressBar(1.0);
+    private javafx.animation.ScaleTransition pulseTransition;
     
     // Fleet Status
     private final HBox playerFleetStatus = new HBox(5);
@@ -111,6 +112,13 @@ public class BattleScreen extends BorderPane {
         bottomBar.getChildren().addAll(turnLabel, timerBox, statusLabel);
         setBottom(bottomBar);
 
+        // Initialize Pulse Animation
+        pulseTransition = new javafx.animation.ScaleTransition(javafx.util.Duration.millis(800), turnLabel);
+        pulseTransition.setFromX(1.0); pulseTransition.setFromY(1.0);
+        pulseTransition.setToX(1.1); pulseTransition.setToY(1.1);
+        pulseTransition.setCycleCount(javafx.animation.Animation.INDEFINITE);
+        pulseTransition.setAutoReverse(true);
+
         initFleetStatus(playerFleetStatus);
         initFleetStatus(enemyFleetStatus);
         updateLanguage();
@@ -119,10 +127,18 @@ public class BattleScreen extends BorderPane {
     public void updateTimer(double progress, int secondsRemaining) {
         timerProgress.setProgress(progress);
         timerLabel.setText(secondsRemaining + "s");
+        
         if (secondsRemaining <= 5) {
             timerLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #fa3e3e;");
+            // Flash effect for critical time
+            if (secondsRemaining % 2 == 0) {
+                timerLabel.setOpacity(0.3);
+            } else {
+                timerLabel.setOpacity(1.0);
+            }
         } else {
             timerLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #8d949e;");
+            timerLabel.setOpacity(1.0);
         }
     }
 
@@ -223,9 +239,13 @@ public class BattleScreen extends BorderPane {
         if (isPlayerTurn) {
             // Player's turn: highlight the target (enemy board)
             enemyBoard.getStyleClass().add("active-board");
+            pulseTransition.play();
         } else {
             // Enemy's turn: highlight the target (player board)
             playerBoard.getStyleClass().add("active-board");
+            pulseTransition.stop();
+            turnLabel.setScaleX(1.0);
+            turnLabel.setScaleY(1.0);
         }
     }
 

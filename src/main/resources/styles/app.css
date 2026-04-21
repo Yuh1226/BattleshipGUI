@@ -56,6 +56,11 @@
     -fx-background-color: #d8dadf;
 }
 
+/* Fix for disabled cells - ensure they stay clear always */
+.cell-button:disabled {
+    -fx-opacity: 1.0 !important;
+}
+
 .board-container {
     -fx-padding: 8;
     -fx-background-color: #ffffff;
@@ -63,10 +68,10 @@
     -fx-border-color: #dddfe2;
     -fx-border-radius: 12;
     -fx-border-width: 2;
-    -fx-opacity: 0.5; /* Dimmed by default */
+    -fx-opacity: 0.6; /* Dimmed by default when not active */
 }
 
-/* Active board highlight */
+/* Restoring Active board highlight */
 .active-board {
     -fx-opacity: 1.0 !important;
 }
@@ -79,11 +84,6 @@
 .enemy-board.active-board {
     -fx-border-color: #fa3e3e;
     -fx-effect: dropshadow(three-pass-box, rgba(250,62,62,0.4), 15, 0, 0, 0);
-}
-
-/* Fix for disabled cells in active board - ensure they stay clear */
-.active-board .cell-button:disabled {
-    -fx-opacity: 1.0 !important;
 }
 
 .board-title {

@@ -102,6 +102,37 @@ public class BoardGrid extends GridPane {
         }
     }
 
+    public void setOnCellDragDetected(CellClickListener listener) {
+        for (int r = 0; r < SIZE; r++) {
+            for (int c = 0; c < SIZE; c++) {
+                final int row = r;
+                final int col = c;
+                buttons[r][c].setOnDragDetected(event -> {
+                    if (buttons[row][col].getStyleClass().contains("state-ship")) {
+                        listener.onCellClicked(row, col);
+                        event.consume();
+                    }
+                });
+            }
+        }
+    }
+
+    public void setOnCellDragDone(CellDragDoneListener listener) {
+        for (int r = 0; r < SIZE; r++) {
+            for (int c = 0; c < SIZE; c++) {
+                final int row = r;
+                final int col = c;
+                buttons[r][c].setOnDragDone(event -> {
+                    listener.onDragDone(row, col, event.getTransferMode() != null);
+                });
+            }
+        }
+    }
+
+    public interface CellDragDoneListener {
+        void onDragDone(int row, int col, boolean success);
+    }
+
     public void setOnCellDragDropped(CellDragDroppedListener listener) {
         for (int r = 0; r < SIZE; r++) {
             for (int c = 0; c < SIZE; c++) {
@@ -184,52 +215,94 @@ public class BoardGrid extends GridPane {
         }
         cell.setDisable(true);
 
-        // Enhanced animation: Scale + Fade
-        ScaleTransition st = new ScaleTransition(Duration.millis(300), cell);
-        st.setFromX(0.5); st.setFromY(0.5);
-        st.setToX(1.0); st.setToY(1.0);
-
-        FadeTransition ft = new FadeTransition(Duration.millis(300), cell);
-        ft.setFromValue(0.3);
-        ft.setToValue(1.0);
-
-        ParallelTransition pt = new ParallelTransition(st, ft);
-        pt.play();
-
+        // Enhanced animation
         if (isHit) {
-            shakeCell(cell);
+            // Explosion effect: Scale up large then settle
+            ScaleTransition st = new ScaleTransition(Duration.millis(400), cell);
+            st.setFromX(2.0); st.setFromY(2.0);
+            st.setToX(1.0); st.setToY(1.0);
+            
+            FadeTransition ft = new FadeTransition(Duration.millis(200), cell);
+            ft.setFromValue(0.0);
+            ft.setToValue(1.0);
+            
+            ParallelTransition pt = new ParallelTransition(st, ft);
+            pt.play();
+            
+            shakeCell(cell, 4, 6); // Harder shake for hit
+        } else {
+            // Splash effect: Scale from center
+            ScaleTransition st = new ScaleTransition(Duration.millis(300), cell);
+            st.setFromX(0.2); st.setFromY(0.2);
+            st.setToX(1.0); st.setToY(1.0);
+
+            FadeTransition ft = new FadeTransition(Duration.millis(300), cell);
+            ft.setFromValue(0.3);
+            ft.setToValue(1.0);
+
+            ParallelTransition pt = new ParallelTransition(st, ft);
+            pt.play();
         }
     }
 
     public void shake() {
-        TranslateTransition tt = new TranslateTransition(Duration.millis(50), this);
+        TranslateTransition tt = new TranslateTransition(Duration.millis(40), this);
         tt.setFromX(0);
-        tt.setToX(5);
-        tt.setCycleCount(4);
+        tt.setToX(8);
+        tt.setCycleCount(6);
         tt.setAutoReverse(true);
         tt.setOnFinished(e -> setTranslateX(0));
         tt.play();
     }
 
-    private void shakeCell(Button cell) {
-        TranslateTransition tt = new TranslateTransition(Duration.millis(50), cell);
+    private void shakeCell(Button cell, int displacement, int cycles) {
+        TranslateTransition tt = new TranslateTransition(Duration.millis(40), cell);
         tt.setFromX(0);
-        tt.setToX(2);
-        tt.setCycleCount(4);
+        tt.setToX(displacement);
+        tt.setCycleCount(cycles);
         tt.setAutoReverse(true);
         tt.setOnFinished(e -> cell.setTranslateX(0));
         tt.play();
     }
 
+    private void shakeCell(Button cell) {
+        shakeCell(cell, 2, 4);
+    }
+
     public void showShipCell(int row, int col) {
+        showShipCell(row, col, false);
+    }
+
+    public void showShipCell(int row, int col, boolean animate) {
         Button cell = buttons[row][col];
         applyState(cell, "state-ship");
+        
+        if (animate) {
+            // Pop-in effect only if requested
+            ScaleTransition st = new ScaleTransition(Duration.millis(250), cell);
+            st.setFromX(0.4); st.setFromY(0.4);
+            st.setToX(1.0); st.setToY(1.0);
+            st.play();
+        }
     }
 
     public void markButtonAsSunk(int row, int col) {
         Button cell = buttons[row][col];
         applyState(cell, "state-sunk");
-        shakeCell(cell);
+        
+        // Sinking tilt animation
+        javafx.animation.RotateTransition rt = new javafx.animation.RotateTransition(Duration.millis(600), cell);
+        rt.setByAngle(15);
+        rt.setCycleCount(2);
+        rt.setAutoReverse(true);
+        
+        FadeTransition ft = new FadeTransition(Duration.millis(600), cell);
+        ft.setToValue(0.7); // Fade slightly
+        
+        ParallelTransition pt = new ParallelTransition(rt, ft);
+        pt.play();
+        
+        shakeCell(cell, 3, 6);
     }
 
     public void reset() {

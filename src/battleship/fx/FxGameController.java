@@ -65,6 +65,8 @@ public class FxGameController {
 
         setupView.setOnCellClicked(this::handleSetupPlacement);
         setupView.setOnCellRightClicked(this::handleSetupRemoveShip);
+        setupView.setOnCellDragDetected(this::handleSetupDragDetected);
+        setupView.setOnCellDragDone(this::handleSetupDragDone);
         setupView.setOnCellDragDropped(this::handleSetupDragDropped);
         p2view.setOnCellClicked(this::handlePlayerFire);
 
@@ -218,11 +220,81 @@ public class FxGameController {
         handlePlayerFire(r, c);
     }
 
+    private void handleSetupDragDetected(int row, int col) {
+        Ship ship = p1board.getShipAt(row, col);
+        if (ship != null) {
+            // Initiate move logic
+            javafx.scene.input.Dragboard db = setupView.getButton(row, col).startDragAndDrop(javafx.scene.input.TransferMode.MOVE);
+            javafx.scene.input.ClipboardContent content = new javafx.scene.input.ClipboardContent();
+            content.putString(String.valueOf(ship.getLength()));
+            db.setContent(content);
+            
+            // Set moving ship info
+            this.direction = ship.getDirection();
+            this.selectedLength = ship.getLength();
+            
+            // Remove ship temporarily to allow previewing new position
+            p1board.removeShip(ship);
+            setupView.reset();
+            renderShips(p1board, setupView);
+            
+            setupScreen.setStatusText("Moving ship (Length: " + ship.getLength() + ")");
+            
+            // If the move is cancelled or invalid, we need a way to potentially put it back
+            // but for now, moving it simply returns it to a "floating" state like initial drag.
+            // However, to make it easier, if they drop it outside, we could return it.
+            // Let's just treat it as if they picked it up from the dock.
+        }
+    }
+
+    private void handleSetupDragDone(int row, int col, boolean success) {
+        if (!success) {
+            // If drop failed (e.g. dropped outside grid), the ship is already removed from board.
+            // We must add it back to remaining ships so it doesn't disappear.
+            if (!remainingShips.contains(selectedLength)) {
+                remainingShips.add(selectedLength);
+                remainingShips.sort((a, b) -> b - a);
+                setupScreen.setShipsRemaining(remainingShips, remainingShips.get(0));
+                setupScreen.setStatusText("Ship placement cancelled. Returned to fleet.");
+            }
+        }
+        setupView.reset();
+        renderShips(p1board, setupView);
+    }
+
     private void handleSetupDragDropped(int row, int col, String data) {
         try {
             int length = Integer.parseInt(data);
-            selectedLength = length;
-            handleSetupPlacement(row, col);
+            
+            if (p1board.canPlaceShip(length, row, col, direction)) {
+                Ship ship = new Ship(length);
+                ship.setLocation(row, col);
+                ship.setDirection(direction);
+                p1board.placeShip(ship);
+                setupScreen.setStatusText("Ship moved successfully.");
+                
+                // If this was a "move" from the board, it was already removed in DragDetected.
+                // If it was from the dock:
+                remainingShips.remove(Integer.valueOf(length));
+            } else {
+                // If cannot place, we don't have the original ship reference here easily 
+                // in a simple way without more state. 
+                // To keep it simple: if move fails, the ship returns to the dock.
+                if (!remainingShips.contains(length)) {
+                    remainingShips.add(length);
+                    remainingShips.sort((a, b) -> b - a);
+                }
+                setupScreen.setStatusText("Invalid position! Ship returned to fleet.");
+            }
+            
+            setupView.reset();
+            renderShips(p1board, setupView);
+            
+            if (!remainingShips.isEmpty()) {
+                selectedLength = remainingShips.get(0);
+            }
+            setupScreen.setShipsRemaining(remainingShips, selectedLength);
+            setupScreen.setContinueEnabled(remainingShips.isEmpty());
         } catch (NumberFormatException e) {
             // ignore
         }
@@ -256,7 +328,7 @@ public class FxGameController {
                 }
                 
                 p1board.placeShip(ship);
-                renderShipCells(ship.getRow(), ship.getCol(), ship.getLength(), ship.getDirection(), setupView);
+                renderShipCells(ship.getRow(), ship.getCol(), ship.getLength(), ship.getDirection(), setupView, true);
             }
         }
     }
@@ -324,7 +396,7 @@ public class FxGameController {
         ship.setLocation(row, col);
         ship.setDirection(direction);
         p1board.placeShip(ship);
-        renderShipCells(row, col, selectedLength, direction, setupView);
+        renderShipCells(row, col, selectedLength, direction, setupView, true); // Animate new placement
 
         remainingShips.remove(Integer.valueOf(selectedLength));
         if (!remainingShips.isEmpty()) {
@@ -580,17 +652,17 @@ public class FxGameController {
         for (int r = 0; r < 10; r++) {
             for (int c = 0; c < 10; c++) {
                 if (nodes[r][c].getVal() == Node.SHIP) {
-                    grid.showShipCell(r, c);
+                    grid.showShipCell(r, c, false); // No animation for full render
                 }
             }
         }
     }
 
-    private void renderShipCells(int row, int col, int length, int dir, BoardGrid grid) {
+    private void renderShipCells(int row, int col, int length, int dir, BoardGrid grid, boolean animate) {
         for (int i = 0; i < length; i++) {
             int r = row + (dir == Ship.VERTICAl ? i : 0);
             int c = col + (dir == Ship.HORIZONTAL ? i : 0);
-            grid.showShipCell(r, c);
+            grid.showShipCell(r, c, animate);
         }
     }
 
@@ -603,13 +675,15 @@ public class FxGameController {
     }
 
     private void markSunkShip(Board board, BoardGrid grid, int row, int col) {
-        Node[][] nodes = board.getGrid();
-        board.markShipAsSunk(row, col, nodes);
-        for (int r = 0; r < 10; r++) {
-            for (int c = 0; c < 10; c++) {
-                if (nodes[r][c].getVal() == Node.SUNK) {
-                    grid.markButtonAsSunk(r, c);
-                }
+        Ship ship = board.getShipAt(row, col);
+        if (ship != null) {
+            Node[][] nodes = board.getGrid();
+            board.markShipAsSunk(row, col, nodes);
+            
+            for (int i = 0; i < ship.getLength(); i++) {
+                int r = ship.getRow() + (ship.getDirection() == Ship.VERTICAl ? i : 0);
+                int c = ship.getCol() + (ship.getDirection() == Ship.HORIZONTAL ? i : 0);
+                grid.markButtonAsSunk(r, c);
             }
         }
     }
