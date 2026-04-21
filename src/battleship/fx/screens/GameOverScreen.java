@@ -22,11 +22,15 @@ public class GameOverScreen extends VBox {
     private final Label hitsHeader = new Label();
     private final Label accuracyHeader = new Label();
     private final Label sunkHeader = new Label();
+    private final Label durationHeader = new Label();
+    private final Label difficultyHeader = new Label();
 
     private final Label shotsLabel = new Label("0");
     private final Label hitsLabel = new Label("0");
     private final Label accuracyLabel = new Label("0%");
     private final Label sunkLabel = new Label("0");
+    private final Label durationLabel = new Label("00:00");
+    private final Label difficultyLabel = new Label("-");
     
     private final Button againBtn = new Button();
     private final Button menuBtn = new Button();
@@ -43,15 +47,18 @@ public class GameOverScreen extends VBox {
         // Stats Container
         javafx.scene.layout.GridPane statsPane = new javafx.scene.layout.GridPane();
         statsPane.setAlignment(Pos.CENTER);
-        statsPane.setHgap(40);
+        statsPane.setHgap(30);
         statsPane.setVgap(15);
-        statsPane.setPadding(new Insets(20));
+        statsPane.setPadding(new Insets(25));
         statsPane.getStyleClass().add("stats-container");
 
-        addStatRow(statsPane, shotsHeader, shotsLabel, 0);
-        addStatRow(statsPane, hitsHeader, hitsLabel, 1);
-        addStatRow(statsPane, accuracyHeader, accuracyLabel, 2);
-        addStatRow(statsPane, sunkHeader, sunkLabel, 3);
+        // 2 columns for a cleaner grid
+        addStatRow(statsPane, shotsHeader, shotsLabel, 0, 0);
+        addStatRow(statsPane, hitsHeader, hitsLabel, 1, 0);
+        addStatRow(statsPane, accuracyHeader, accuracyLabel, 0, 1);
+        addStatRow(statsPane, sunkHeader, sunkLabel, 1, 1);
+        addStatRow(statsPane, durationHeader, durationLabel, 0, 2);
+        addStatRow(statsPane, difficultyHeader, difficultyLabel, 1, 2);
 
         VBox buttons = new VBox(15);
         buttons.setAlignment(Pos.CENTER);
@@ -74,11 +81,12 @@ public class GameOverScreen extends VBox {
         updateLanguage();
     }
 
-    private void addStatRow(javafx.scene.layout.GridPane pane, Label header, Label valueLabel, int row) {
+    private void addStatRow(javafx.scene.layout.GridPane pane, Label header, Label valueLabel, int col, int row) {
+        VBox box = new VBox(5, header, valueLabel);
+        box.setAlignment(Pos.CENTER);
         header.getStyleClass().add("stat-label");
         valueLabel.getStyleClass().add("stat-value");
-        pane.add(header, 0, row);
-        pane.add(valueLabel, 1, row);
+        pane.add(box, col, row);
     }
 
     public void updateLanguage() {
@@ -87,6 +95,8 @@ public class GameOverScreen extends VBox {
         hitsHeader.setText(LocalizationManager.get("hits_confirmed"));
         accuracyHeader.setText(LocalizationManager.get("accuracy"));
         sunkHeader.setText(LocalizationManager.get("ships_sunk"));
+        durationHeader.setText(LocalizationManager.get("match_duration"));
+        difficultyHeader.setText(LocalizationManager.get("ai_difficulty"));
         againBtn.setText(LocalizationManager.get("new_operation"));
         menuBtn.setText(LocalizationManager.get("return_hq"));
         
@@ -105,16 +115,18 @@ public class GameOverScreen extends VBox {
     public void setResultText(String text) {
         resultLabel.setText(text);
         if (text.equals(LocalizationManager.get("win"))) {
-            resultLabel.setStyle("-fx-text-fill: #00ff00; -fx-font-size: 32px; -fx-font-weight: bold;");
+            resultLabel.setStyle("-fx-text-fill: #1877f2; -fx-font-size: 32px; -fx-font-weight: bold;");
         } else {
-            resultLabel.setStyle("-fx-text-fill: #ff3333; -fx-font-size: 32px; -fx-font-weight: bold;");
+            resultLabel.setStyle("-fx-text-fill: #fa3e3e; -fx-font-size: 32px; -fx-font-weight: bold;");
         }
     }
 
-    public void setStats(int shots, int hits, int sunk) {
+    public void setStats(int shots, int hits, int sunk, String duration, String difficulty) {
         shotsLabel.setText(String.valueOf(shots));
         hitsLabel.setText(String.valueOf(hits));
         sunkLabel.setText(String.valueOf(sunk) + " / 5");
+        durationLabel.setText(duration);
+        difficultyLabel.setText(difficulty);
         
         double acc = (shots > 0) ? (hits * 100.0 / shots) : 0;
         accuracyLabel.setText(String.format("%.1f%%", acc));

@@ -17,7 +17,7 @@ import javafx.util.Duration;
 
 public class FxGameController {
 	public interface GameEventListener {
-		void onGameOver(boolean playerWon, int shots, int hits, int sunk);
+		void onGameOver(boolean playerWon, int shots, int hits, int sunk, String duration, String difficulty);
 	}
 
     private final Board p1board;
@@ -49,6 +49,7 @@ public class FxGameController {
     private javafx.animation.Timeline turnTimeline;
     private int secondsRemaining = 30;
     private static final int MAX_TURN_TIME = 30;
+    private long matchStartTime;
 
     public FxGameController(Board p1board, Board p2board, SetupScreen setupScreen, BattleScreen battleScreen) {
         this.p1board = p1board;
@@ -169,6 +170,7 @@ public class FxGameController {
         battleScreen.updateTurnDisplay(true); // Player turn starts
         battleScreen.setTurnText("Your turn");
         battleScreen.setStatusText("Pick a target.");
+        matchStartTime = System.currentTimeMillis();
         startTurnTimer();
     }
 
@@ -546,26 +548,27 @@ public class FxGameController {
     }
 
     private boolean checkWinCondition() {
-        if (p1Hits == winScore) {
+        if (p1Hits == winScore || p2Hits == winScore) {
             isGameOver = true;
             isBotThinking = false;
             stopTurnTimer();
+            
+            long durationMillis = System.currentTimeMillis() - matchStartTime;
+            long mins = (durationMillis / 1000) / 60;
+            long secs = (durationMillis / 1000) % 60;
+            String durationStr = String.format("%02d:%02d", mins, secs);
+            
+            String diffStr = LocalizationManager.get("hard");
+            if (aiLevel == BattleshipAI.EASY) diffStr = LocalizationManager.get("easy");
+            else if (aiLevel == BattleshipAI.MEDIUM) diffStr = LocalizationManager.get("normal");
+
+            boolean playerWon = (p1Hits == winScore);
             battleScreen.setTurnText("Game over");
-            battleScreen.setStatusText("You win!");
+            battleScreen.setStatusText(playerWon ? "You win!" : "You lose.");
             battleScreen.setEnemyEnabled(false);
+            
             if (gameEventListener != null) {
-                gameEventListener.onGameOver(true, p1Shots, p1Hits, p1Sunk);
-            }
-            return true;
-        } else if (p2Hits == winScore) {
-            isGameOver = true;
-            isBotThinking = false;
-            stopTurnTimer();
-            battleScreen.setTurnText("Game over");
-            battleScreen.setStatusText("You lose.");
-            battleScreen.setEnemyEnabled(false);
-            if (gameEventListener != null) {
-                gameEventListener.onGameOver(false, p1Shots, p1Hits, p1Sunk);
+                gameEventListener.onGameOver(playerWon, p1Shots, p1Hits, p1Sunk, durationStr, diffStr);
             }
             return true;
         }

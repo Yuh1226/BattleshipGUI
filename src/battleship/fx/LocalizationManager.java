@@ -63,6 +63,8 @@ public class LocalizationManager {
         add("hits_confirmed", "HITS CONFIRMED", "SỐ LƯỢT TRÚNG");
         add("accuracy", "ACCURACY", "ĐỘ CHÍNH XÁC");
         add("ships_sunk", "SHIPS SUNK", "SỐ TÀU CHÌM");
+        add("match_duration", "MATCH DURATION", "THỜI GIAN TRẬN ĐẤU");
+        add("ai_difficulty", "AI DIFFICULTY", "ĐỘ KHÓ AI");
 
         // Settings
         add("lang_label", "Language / Ngôn ngữ:", "Ngôn ngữ:");

@@ -184,13 +184,13 @@ public class Main extends Application {
 			}
 		});
 
-		controller.setGameEventListener((playerWon, shots, hits, sunk) -> {
+		controller.setGameEventListener((playerWon, shots, hits, sunk, duration, difficulty) -> {
 			if (playerWon) {
 				gameOverScreen.setResultText(LocalizationManager.get("win"));
 			} else {
 				gameOverScreen.setResultText(LocalizationManager.get("lose"));
 			}
-			gameOverScreen.setStats(shots, hits, sunk);
+			gameOverScreen.setStats(shots, hits, sunk, duration, difficulty);
 			showScreen(screenManager, SCREEN_GAME_OVER);
 		});
 
