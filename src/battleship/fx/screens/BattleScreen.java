@@ -26,6 +26,8 @@ public class BattleScreen extends BorderPane {
     
     private final Label turnLabel = new Label();
     private final Label statusLabel = new Label();
+    private final Label timerLabel = new Label("30s");
+    private final javafx.scene.control.ProgressBar timerProgress = new javafx.scene.control.ProgressBar(1.0);
     
     // Fleet Status
     private final HBox playerFleetStatus = new HBox(5);
@@ -91,17 +93,42 @@ public class BattleScreen extends BorderPane {
         setRight(rightSide);
 
         // BOTTOM: Turn and Status
-        VBox bottomBar = new VBox(5);
+        VBox bottomBar = new VBox(8);
         bottomBar.setAlignment(Pos.CENTER);
         bottomBar.setPadding(new Insets(10, 0, 0, 0));
+        
         turnLabel.getStyleClass().add("status-emphasis");
         statusLabel.getStyleClass().add("info-label");
-        bottomBar.getChildren().addAll(turnLabel, statusLabel);
+        
+        timerProgress.setPrefWidth(300);
+        timerProgress.getStyleClass().add("timer-bar");
+        timerLabel.getStyleClass().add("info-label");
+        timerLabel.setStyle("-fx-font-weight: bold;");
+        
+        VBox timerBox = new VBox(2, timerProgress, timerLabel);
+        timerBox.setAlignment(Pos.CENTER);
+        
+        bottomBar.getChildren().addAll(turnLabel, timerBox, statusLabel);
         setBottom(bottomBar);
 
         initFleetStatus(playerFleetStatus);
         initFleetStatus(enemyFleetStatus);
         updateLanguage();
+    }
+
+    public void updateTimer(double progress, int secondsRemaining) {
+        timerProgress.setProgress(progress);
+        timerLabel.setText(secondsRemaining + "s");
+        if (secondsRemaining <= 5) {
+            timerLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #fa3e3e;");
+        } else {
+            timerLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #8d949e;");
+        }
+    }
+
+    public void setTimerVisible(boolean visible) {
+        timerProgress.setVisible(visible);
+        timerLabel.setVisible(visible);
     }
 
     private void initFleetStatus(HBox container) {

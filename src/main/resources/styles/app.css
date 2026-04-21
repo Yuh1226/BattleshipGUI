@@ -257,3 +257,16 @@
     -fx-font-size: 13px;
     -fx-text-fill: #1c1e21;
 }
+
+.timer-bar {
+    -fx-accent: #1877f2;
+}
+
+.timer-bar .track {
+    -fx-background-color: #e4e6eb;
+    -fx-background-radius: 4;
+}
+
+.timer-bar .bar {
+    -fx-background-radius: 4;
+}
