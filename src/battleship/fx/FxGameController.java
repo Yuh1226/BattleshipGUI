@@ -35,6 +35,7 @@ public class FxGameController {
     private final int winScore = 17;
     private boolean isGameOver = false;
     private boolean isBotThinking = false;
+    private boolean isProcessingAction = false;
     private int aiLevel = BattleshipAI.HARD;
     private BattleshipAI botAI = new BattleshipAI();
     private List<Integer> p1AliveShips = new ArrayList<>(Arrays.asList(5, 4, 3, 3, 2));
@@ -156,6 +157,7 @@ public class FxGameController {
         p2Hits = 0;
         isGameOver = false;
         isBotThinking = false;
+        isProcessingAction = false;
         botAI = new BattleshipAI();
         p1AliveShips = new ArrayList<>(Arrays.asList(5, 4, 3, 3, 2));
         p2AliveShips = new ArrayList<>(Arrays.asList(5, 4, 3, 3, 2));
@@ -206,7 +208,7 @@ public class FxGameController {
 
     private void handleTimeOut() {
         stopTurnTimer();
-        if (isGameOver || isBotThinking) return;
+        if (isGameOver || isBotThinking || isProcessingAction) return;
 
         battleScreen.addLogEvent("TIME OUT!", true);
         // Random shot for player
@@ -404,7 +406,7 @@ public class FxGameController {
     }
 
     private void handlePlayerFire(int row, int col) {
-        if (isGameOver || isBotThinking) {
+        if (isGameOver || isBotThinking || isProcessingAction) {
             return;
         }
 
@@ -414,6 +416,7 @@ public class FxGameController {
         }
 
         stopTurnTimer();
+        isProcessingAction = true;
         p1Shots++;
         String coord = (char)('A' + col) + "" + (row + 1);
         
@@ -421,7 +424,7 @@ public class FxGameController {
         AudioManager.getInstance().playSound("fire");
         
         // Delay slightly for the projectile to "travel"
-        PauseTransition travelDelay = new PauseTransition(Duration.millis(800));
+        PauseTransition travelDelay = new PauseTransition(Duration.seconds(AudioManager.TRAVEL_DELAY));
         travelDelay.setOnFinished(e -> {
             boolean isHit = p2board.fireAt(row, col);
             p2view.updateButtonState(row, col, isHit);
@@ -429,37 +432,44 @@ public class FxGameController {
             if (isHit) {
                 p1Hits++;
                 p2view.shake();
+                String sfx = "hit";
                 if (p2board.isSunkAt(row, col)) {
+                    sfx = "sunk";
                     p1Sunk++;
                     int len = p2board.lengthShipIs(row, col);
                     p2AliveShips.remove(Integer.valueOf(len));
                     battleScreen.updateFleetStatus(false, p2AliveShips);
                     battleScreen.addLogEvent(String.format(LocalizationManager.get("log_player_sunk"), len, coord), true);
-                    
                     markSunkShip(p2board, p2view, row, col);
                     battleScreen.setStatusText(LocalizationManager.get("status_hit_sunk"));
-                    
-                    // Prioritize 'sunk' sound over 'hit' sound
-                    AudioManager.getInstance().playSound("sunk");
                 } else {
                     battleScreen.addLogEvent(String.format(LocalizationManager.get("log_player_hit"), coord), false);
                     battleScreen.setStatusText(LocalizationManager.get("status_hit"));
-                    AudioManager.getInstance().playSound("hit");
                 }
-                battleScreen.updateTurnDisplay(true);
-                battleScreen.setTurnText(LocalizationManager.get("turn_player"));
-                battleScreen.setEnemyEnabled(true);
-                if (!checkWinCondition()) {
-                    startTurnTimer();
-                }
+
+                // Wait for the hit/sunk sound to finish before allowing next shot
+                AudioManager.getInstance().playSound(sfx, () -> {
+                    isProcessingAction = false;
+                    battleScreen.updateTurnDisplay(true);
+                    battleScreen.setTurnText(LocalizationManager.get("turn_player"));
+                    battleScreen.setEnemyEnabled(true);
+                    if (!checkWinCondition()) {
+                        startTurnTimer();
+                    }
+                });
+
             } else {
                 battleScreen.addLogEvent(String.format(LocalizationManager.get("log_player_miss"), coord), false);
                 battleScreen.updateTurnDisplay(false);
                 battleScreen.setTurnText(LocalizationManager.get("turn_enemy"));
                 battleScreen.setStatusText(LocalizationManager.get("status_miss_thinking"));
                 battleScreen.setEnemyEnabled(false);
-                AudioManager.getInstance().playSound("miss");
-                delayedBotFire();
+                
+                // Wait for the miss sound to finish before bot turn starts
+                AudioManager.getInstance().playSound("miss", () -> {
+                    isProcessingAction = false;
+                    delayedBotFire();
+                });
             }
         });
         travelDelay.play();
@@ -498,10 +508,10 @@ public class FxGameController {
         int c = targetNode.getY();
         String coord = (char)('A' + c) + "" + (r + 1);
 
-        // Sound: Fire!
+        isProcessingAction = true;
         AudioManager.getInstance().playSound("fire");
 
-        PauseTransition travelDelay = new PauseTransition(Duration.millis(800));
+        PauseTransition travelDelay = new PauseTransition(Duration.seconds(AudioManager.TRAVEL_DELAY));
         travelDelay.setOnFinished(e -> {
             boolean isHit = p1board.fireAt(r, c);
             p1view.updateButtonState(r, c, isHit);
@@ -509,32 +519,38 @@ public class FxGameController {
             if (isHit) {
                 p2Hits++;
                 p1view.shake();
+                String sfx = "hit";
                 battleScreen.addLogEvent(String.format(LocalizationManager.get("log_enemy_hit"), coord), false);
                 battleScreen.setStatusText(LocalizationManager.get("status_enemy_hit"));
-                AudioManager.getInstance().playSound("hit");
                 
                 if (p1board.isSunkAt(r, c)) {
+                    sfx = "sunk";
                     int len = p1board.lengthShipIs(r, c);
                     p1AliveShips.remove(Integer.valueOf(len));
                     battleScreen.updateFleetStatus(true, p1AliveShips);
                     battleScreen.addLogEvent(String.format(LocalizationManager.get("log_enemy_sunk"), len), true);
                     p1view.shake();
                     markSunkShip(p1board, p1view, r, c);
-                    AudioManager.getInstance().playSound("sunk");
                 }
                 
-                if (!checkWinCondition()) {
-                    botFireEasy();
-                }
+                AudioManager.getInstance().playSound(sfx, () -> {
+                    isProcessingAction = false;
+                    if (!checkWinCondition()) {
+                        botFireEasy();
+                    }
+                });
             } else {
                 battleScreen.addLogEvent(String.format(LocalizationManager.get("log_enemy_miss"), coord), false);
                 battleScreen.updateTurnDisplay(true);
                 battleScreen.setTurnText(LocalizationManager.get("turn_player"));
                 battleScreen.setStatusText(LocalizationManager.get("status_enemy_miss"));
                 battleScreen.setEnemyEnabled(true);
-                isBotThinking = false;
-                AudioManager.getInstance().playSound("miss");
-                startTurnTimer();
+                
+                AudioManager.getInstance().playSound("miss", () -> {
+                    isProcessingAction = false;
+                    isBotThinking = false;
+                    startTurnTimer();
+                });
             }
         });
         travelDelay.play();
@@ -552,9 +568,10 @@ public class FxGameController {
         int c = targetNode.getY();
         String coord = (char)('A' + c) + "" + (r + 1);
 
+        isProcessingAction = true;
         AudioManager.getInstance().playSound("fire");
 
-        PauseTransition travelDelay = new PauseTransition(Duration.millis(800));
+        PauseTransition travelDelay = new PauseTransition(Duration.seconds(AudioManager.TRAVEL_DELAY));
         travelDelay.setOnFinished(e -> {
             boolean isHit = p1board.fireAt(r, c);
             p1view.updateButtonState(r, c, isHit);
@@ -562,35 +579,41 @@ public class FxGameController {
             if (isHit) {
                 p2Hits++;
                 p1view.shake();
+                String sfx = "hit";
                 battleScreen.addLogEvent(String.format(LocalizationManager.get("log_enemy_hit"), coord), false);
                 battleScreen.setStatusText(LocalizationManager.get("status_enemy_hit"));
-                AudioManager.getInstance().playSound("hit");
                 botAI.updateAfterFire(p1board, targetNode, isHit);
                 
                 if (p1board.isSunkAt(r, c)) {
+                    sfx = "sunk";
                     int len = p1board.lengthShipIs(r, c);
                     p1AliveShips.remove(Integer.valueOf(len));
                     battleScreen.updateFleetStatus(true, p1AliveShips);
                     battleScreen.addLogEvent(String.format(LocalizationManager.get("log_enemy_sunk"), len), true);
                     p1view.shake();
                     markSunkShip(p1board, p1view, r, c);
-                    AudioManager.getInstance().playSound("sunk");
                 }
 
-                if (!checkWinCondition()) {
-                    delayedBotFire();
-                } else {
-                    isBotThinking = false;
-                }
+                AudioManager.getInstance().playSound(sfx, () -> {
+                    isProcessingAction = false;
+                    if (!checkWinCondition()) {
+                        delayedBotFire();
+                    } else {
+                        isBotThinking = false;
+                    }
+                });
             } else {
                 battleScreen.addLogEvent(String.format(LocalizationManager.get("log_enemy_miss"), coord), false);
                 battleScreen.updateTurnDisplay(true);
                 battleScreen.setTurnText(LocalizationManager.get("turn_player"));
                 battleScreen.setStatusText(LocalizationManager.get("status_enemy_miss"));
                 battleScreen.setEnemyEnabled(true);
-                isBotThinking = false;
-                AudioManager.getInstance().playSound("miss");
-                startTurnTimer();
+                
+                AudioManager.getInstance().playSound("miss", () -> {
+                    isProcessingAction = false;
+                    isBotThinking = false;
+                    startTurnTimer();
+                });
             }
         });
         travelDelay.play();
@@ -608,9 +631,10 @@ public class FxGameController {
         int c = targetNode.getY();
         String coord = (char)('A' + c) + "" + (r + 1);
 
+        isProcessingAction = true;
         AudioManager.getInstance().playSound("fire");
 
-        PauseTransition travelDelay = new PauseTransition(Duration.millis(800));
+        PauseTransition travelDelay = new PauseTransition(Duration.seconds(AudioManager.TRAVEL_DELAY));
         travelDelay.setOnFinished(e -> {
             boolean isHit = p1board.fireAt(r, c);
             p1view.updateButtonState(r, c, isHit);
@@ -618,36 +642,41 @@ public class FxGameController {
             if (isHit) {
                 p2Hits++;
                 p1view.shake();
+                String sfx = "hit";
                 battleScreen.addLogEvent(String.format(LocalizationManager.get("log_enemy_hit"), coord), false);
                 battleScreen.setStatusText(LocalizationManager.get("status_enemy_hit"));
-                AudioManager.getInstance().playSound("hit");
-
                 botAI.updateAfterFire(p1board, targetNode, isHit);
 
                 if (p1board.isSunkAt(r, c)) {
+                    sfx = "sunk";
                     int len = p1board.lengthShipIs(r, c);
                     p1AliveShips.remove(Integer.valueOf(len));
                     battleScreen.updateFleetStatus(true, p1AliveShips);
                     battleScreen.addLogEvent(String.format(LocalizationManager.get("log_enemy_sunk"), len), true);
                     p1view.shake();
                     markSunkShip(p1board, p1view, r, c);
-                    AudioManager.getInstance().playSound("sunk");
                 }
 
-                if (!checkWinCondition()) {
-                    delayedBotFire();
-                } else {
-                    isBotThinking = false;
-                }
+                AudioManager.getInstance().playSound(sfx, () -> {
+                    isProcessingAction = false;
+                    if (!checkWinCondition()) {
+                        delayedBotFire();
+                    } else {
+                        isBotThinking = false;
+                    }
+                });
             } else {
                 battleScreen.addLogEvent(String.format(LocalizationManager.get("log_enemy_miss"), coord), false);
                 battleScreen.updateTurnDisplay(true);
                 battleScreen.setTurnText(LocalizationManager.get("turn_player"));
                 battleScreen.setStatusText(LocalizationManager.get("status_enemy_miss"));
                 battleScreen.setEnemyEnabled(true);
-                isBotThinking = false;
-                AudioManager.getInstance().playSound("miss");
-                startTurnTimer();
+                
+                AudioManager.getInstance().playSound("miss", () -> {
+                    isProcessingAction = false;
+                    isBotThinking = false;
+                    startTurnTimer();
+                });
             }
         });
         travelDelay.play();
