@@ -44,12 +44,17 @@ public class DifficultyScreen extends VBox {
         normalBtn.getStyleClass().add("action-button");
         hardBtn.getStyleClass().add("action-button");
 
+        easyBtn.setMinWidth(120);
+        normalBtn.setMinWidth(120);
+        hardBtn.setMinWidth(120);
+
         easyBtn.setOnAction(event -> notifyDifficulty(Difficulty.EASY));
         normalBtn.setOnAction(event -> notifyDifficulty(Difficulty.NORMAL));
         hardBtn.setOnAction(event -> notifyDifficulty(Difficulty.HARD));
 
         buttons.getChildren().addAll(easyBtn, normalBtn, hardBtn);
 
+        backBtn.setMinWidth(150);
         backBtn.getStyleClass().add("secondary-button");
         backBtn.setOnAction(event -> {
             if (listener != null) {

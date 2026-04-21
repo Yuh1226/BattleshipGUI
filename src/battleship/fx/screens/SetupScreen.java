@@ -49,19 +49,19 @@ public class SetupScreen extends VBox {
         HBox controlButtons = new HBox(8);
         controlButtons.setAlignment(Pos.CENTER);
 
-        rotateButton.setPrefWidth(130);
+        rotateButton.setPrefWidth(160);
         rotateButton.getStyleClass().add("secondary-button");
         rotateButton.setOnAction(event -> {
             for (Listener listener : listeners) listener.onRotate();
         });
 
-        randomButton.setPrefWidth(130);
+        randomButton.setPrefWidth(160);
         randomButton.getStyleClass().add("secondary-button");
         randomButton.setOnAction(event -> {
             for (Listener listener : listeners) listener.onRandomize();
         });
 
-        resetButton.setPrefWidth(130);
+        resetButton.setPrefWidth(160);
         resetButton.getStyleClass().add("secondary-button");
         resetButton.setOnAction(event -> {
             for (Listener listener : listeners) listener.onReset();
@@ -83,13 +83,13 @@ public class SetupScreen extends VBox {
         actions.setAlignment(Pos.CENTER);
         actions.getStyleClass().add("setup-actions");
 
-        backButton.setPrefWidth(90);
+        backButton.setPrefWidth(120);
         backButton.getStyleClass().add("secondary-button");
         backButton.setOnAction(event -> {
             for (Listener listener : listeners) listener.onBack();
         });
 
-        continueButton.setPrefWidth(150);
+        continueButton.setPrefWidth(200);
         continueButton.getStyleClass().add("action-button");
         continueButton.setOnAction(event -> {
             for (Listener listener : listeners) listener.onContinue();

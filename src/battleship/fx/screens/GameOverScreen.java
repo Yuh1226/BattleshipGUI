@@ -63,13 +63,13 @@ public class GameOverScreen extends VBox {
         VBox buttons = new VBox(15);
         buttons.setAlignment(Pos.CENTER);
 
-        againBtn.setPrefWidth(220);
+        againBtn.setPrefWidth(250);
         againBtn.getStyleClass().add("action-button");
         againBtn.setOnAction(event -> {
             if (listener != null) listener.onPlayAgain();
         });
 
-        menuBtn.setPrefWidth(220);
+        menuBtn.setPrefWidth(250);
         menuBtn.getStyleClass().add("secondary-button");
         menuBtn.setOnAction(event -> {
             if (listener != null) listener.onBackToMenu();

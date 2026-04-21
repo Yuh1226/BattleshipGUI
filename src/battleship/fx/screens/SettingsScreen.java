@@ -92,7 +92,7 @@ public class SettingsScreen extends VBox {
         VBox bottomButtons = new VBox(10);
         bottomButtons.setAlignment(Pos.CENTER);
 
-        backButton.setPrefWidth(220);
+        backButton.setPrefWidth(250);
         backButton.getStyleClass().add("action-button");
         backButton.setOnAction(event -> {
             if (listener != null) {
@@ -100,7 +100,7 @@ public class SettingsScreen extends VBox {
             }
         });
 
-        menuButton.setPrefWidth(220);
+        menuButton.setPrefWidth(250);
         menuButton.getStyleClass().add("secondary-button");
         menuButton.setOnAction(event -> {
             if (listener != null) {
@@ -120,7 +120,7 @@ public class SettingsScreen extends VBox {
         audioLabel.setText(LocalizationManager.get("audio_label"));
         soundCheck.setText(LocalizationManager.get("enable_sound"));
         backButton.setText(LocalizationManager.get("back"));
-        menuButton.setText(LocalizationManager.get("back_to_menu"));
+        menuButton.setText(LocalizationManager.get("return_hq"));
     }
 
     public void setListener(Listener listener) {
