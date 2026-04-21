@@ -149,9 +149,23 @@ public class BattleScreen extends BorderPane {
     }
 
     public void addLogEvent(String message, boolean highlight) {
-        Label entry = new Label("> " + message);
-        entry.setWrapText(true);
+        String timestamp = java.time.LocalTime.now().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
+        
+        javafx.scene.text.Text timeText = new javafx.scene.text.Text(timestamp + " ");
+        timeText.getStyleClass().add("log-entry-time");
+        timeText.setFill(javafx.scene.paint.Color.web("#90949c"));
+
+        javafx.scene.text.Text msgText = new javafx.scene.text.Text(message);
+        msgText.getStyleClass().add(highlight ? "log-entry-highlight" : "log-entry");
+        if (highlight) {
+            msgText.setFill(javafx.scene.paint.Color.web("#fa3e3e"));
+        } else {
+            msgText.setFill(javafx.scene.paint.Color.web("#4b4f56"));
+        }
+
+        javafx.scene.text.TextFlow entry = new javafx.scene.text.TextFlow(timeText, msgText);
         entry.getStyleClass().add(highlight ? "log-entry-highlight" : "log-entry");
+        
         logContent.getChildren().add(0, entry); // Add to top
     }
 

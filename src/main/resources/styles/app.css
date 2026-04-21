@@ -167,24 +167,41 @@
 }
 
 .log-container {
-    -fx-background-color: #f7f8fa;
-    -fx-background-radius: 8;
+    -fx-background-color: #f7f8fa; /* Light Grey Background */
+    -fx-background-radius: 12;
     -fx-border-color: #ebedf0;
-    -fx-border-radius: 8;
+    -fx-border-radius: 12;
     -fx-border-width: 1;
+    -fx-padding: 5;
+}
+
+/* Ẩn background mặc định của ScrollPane */
+.log-container .viewport {
+    -fx-background-color: transparent;
 }
 
 .log-entry {
-    -fx-font-size: 11px;
-    -fx-text-fill: #606770;
-    -fx-padding: 2 0;
+    -fx-font-size: 12px;
+    -fx-text-fill: #4b4f56;
+    -fx-padding: 6 10;
+    -fx-border-color: transparent transparent #f0f2f5 transparent;
+    -fx-border-width: 0 0 1 0;
 }
 
 .log-entry-highlight {
-    -fx-font-size: 11px;
+    -fx-font-size: 12px;
     -fx-font-weight: bold;
-    -fx-text-fill: #fa3e3e;
-    -fx-padding: 2 0;
+    -fx-text-fill: #fa3e3e; /* Modern Red */
+    -fx-background-color: rgba(250, 62, 62, 0.05);
+    -fx-padding: 6 10;
+    -fx-border-color: transparent transparent #ffe9e9 transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.log-entry-time {
+    -fx-font-size: 10px;
+    -fx-text-fill: #90949c;
+    -fx-font-weight: bold;
 }
 
 .fleet-indicator-ship {
