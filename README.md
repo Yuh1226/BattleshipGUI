@@ -3,21 +3,25 @@
 Dự án Battleship (Bắn Tàu) cổ điển đã được nâng cấp toàn diện từ Java Swing sang **JavaFX 17** với giao diện hiện đại, tính năng phong phú, tích hợp Gradle và hệ thống AI hoàn chỉnh.
 
 ## 🌟 Tính năng nổi bật
-* **Giao diện Modern Naval:** Các màn hình (Menu, Setup, Battle) được thiết kế hiện đại bằng CSS và các Node tùy chỉnh.
+* **Giao diện Modern Naval:** Các màn hình (Menu, Setup, Battle, Settings, Help) được thiết kế hiện đại bằng CSS và các Node tùy chỉnh.
 * **Trải nghiệm kéo thả (Drag & Drop):** Hỗ trợ kéo thuyền từ bến đỗ thả trực tiếp lên sa bàn.
 * **Xoay tàu linh hoạt:** Tính năng **Click Đúp (Double-Click)** cho phép bạn xoay 90 độ chiếc tàu ngay tại đúng khớp nối (điểm pivot) mà bạn vừa click vào.
 * **Mô hình AI đa mức độ:** Tích hợp Bot đối thủ với 3 mức độ ngắm bắn thông minh (Easy, Medium, Hard).
+* **Quản lý Âm thanh Nâng cao:** 
+  * Tách biệt điều chỉnh **Âm lượng Nhạc nền (Music)** và **Âm lượng Hiệu ứng (SFX)**.
+  * Tích hợp hiệu ứng **Audio Ducking**: Nhạc nền tự động giảm âm lượng khi có hiệu ứng tiếng nổ/bắn đạn diễn ra, mang lại trải nghiệm chiến đấu chân thực.
+* **Hỗ trợ Đa ngôn ngữ:** Tích hợp hệ thống Localization, hỗ trợ chuyển đổi mượt mà giữa Tiếng Anh và Tiếng Việt.
 * **Kiến trúc hướng sự kiện:** Tách biệt triệt để Logic cốt lõi (Model) và Giao diện UI (Screens/Components) thông qua các Listener.
 
 ## 📂 Cấu trúc thư mục
 
 ```text
 BattleshipGUI/
-├── src/main/resources/        # Tài nguyên tĩnh (app.css, hình ảnh)
+├── src/main/resources/        # Tài nguyên tĩnh (app.css, âm thanh, hình ảnh)
 ├── src/battleship/            # Cấu trúc mã nguồn chính
 │   ├── model/                 # Logic lõi, kết cấu bàn cờ
 │   ├── ai/                    # Khối dữ liệu AI thông minh
-│   └── fx/                    # Hệ thống hiển thị bằng JavaFX
+│   └── fx/                    # Hệ thống hiển thị bằng JavaFX (Screens, Components, AudioManager)
 ```
 
 ## 🛠️ Yêu cầu môi trường
