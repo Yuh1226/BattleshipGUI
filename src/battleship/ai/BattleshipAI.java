@@ -131,24 +131,36 @@ public class BattleshipAI {
 
 	// Lấy trọng số cao nhất
 	public Node getHighestScoreNode(Node[][] p1Grid, int[][] heatmap) {
-		int maxHeat = -1;
-		int row = 0;
-		int col = 0;
-		for (int i = 0; i < 10; i++) {
-			for (int j = 0; j < 10; j++) {
-				int val = p1Grid[i][j].getVal();
+			int maxHeat = -1;
+			List<Node> bestNodes = new ArrayList<>();
 
-				if (val != Node.HIT && val != Node.MISS && val != Node.SUNK) {
-					if (heatmap[i][j] > maxHeat) {
-						maxHeat = heatmap[i][j];
-						row = i;
-						col = j;
+			for (int i = 0; i < 10; i++) {
+				for (int j = 0; j < 10; j++) {
+					int val = p1Grid[i][j].getVal();
+
+					// Chỉ xét những ô chưa bắn
+					if (val != Node.HIT && val != Node.MISS && val != Node.SUNK) {
+						if (heatmap[i][j] > maxHeat) {
+							// Nếu tìm thấy mốc điểm mới cao hơn, xóa sạch list cũ và thêm ô mới này vào
+							maxHeat = heatmap[i][j];
+							bestNodes.clear();
+							bestNodes.add(p1Grid[i][j]);
+						} else if (heatmap[i][j] == maxHeat) {
+							// Nếu điểm bằng với kỷ lục hiện tại, thêm nó vào list ứng viên
+							bestNodes.add(p1Grid[i][j]);
+						}
 					}
 				}
 			}
+
+			// Bốc ngẫu nhiên 1 ô trong danh sách các ô có điểm cao nhất
+			if (!bestNodes.isEmpty()) {
+				Random rd = new Random();
+				return bestNodes.get(rd.nextInt(bestNodes.size()));
+			}
+
+			return null; // Trường hợp bảng đã kín hết (thường không xảy ra)
 		}
-		return p1Grid[row][col];
-	}
 
 	private Node getRandomNode(Node[][] p1Grid) {
 		Random rd = new Random();

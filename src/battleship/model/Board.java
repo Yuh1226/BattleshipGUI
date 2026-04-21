@@ -19,6 +19,15 @@ public class Board {
 		}
 	}
 
+	public void reset() {
+		fleet.clear();
+		for (int i = 0; i < size; i++) {
+			for (int j = 0; j < size; j++) {
+				grid[i][j].setVal(Node.EMPTY);
+			}
+		}
+	}
+
 	// Lấy ra grid
 	public Node[][] getGrid() {
 		return grid;
@@ -51,6 +60,35 @@ public class Board {
 			}
 		}
 		fleet.add(s);
+	}
+
+	public Ship getShipAt(int row, int col) {
+		for (Ship s : fleet) {
+			int r = s.getRow();
+			int c = s.getCol();
+			for (int i = 0; i < s.getLength(); i++) {
+				int checkR = r + (s.getDirection() == Ship.VERTICAl ? i : 0);
+				int checkC = c + (s.getDirection() == Ship.HORIZONTAL ? i : 0);
+				if (checkR == row && checkC == col) {
+					return s;
+				}
+			}
+		}
+		return null;
+	}
+
+	public void removeShip(Ship s) {
+		if (!fleet.contains(s)) return;
+		int r = s.getRow();
+		int c = s.getCol();
+		for (int i = 0; i < s.getLength(); i++) {
+			if (s.getDirection() == Ship.HORIZONTAL) {
+				grid[r][c + i].setVal(Node.EMPTY);
+			} else {
+				grid[r + i][c].setVal(Node.EMPTY);
+			}
+		}
+		fleet.remove(s);
 	}
 
 	// Kiểm tra vị trí bắn

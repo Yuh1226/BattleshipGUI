@@ -1,28 +1,48 @@
-# 🚢 Battleship Game - Java Swing (MVC Architecture)
+# 🚢 Battleship Game - JavaFX Edition 🚀
 
-Dự án này là một trò chơi bắn tàu (Battleship) cổ điển được xây dựng bằng ngôn ngữ **Java**, sử dụng thư viện **Swing** để tạo giao diện đồ họa (GUI). Code được thiết kế chặt chẽ theo mô hình **MVC (Model-View-Controller)**, giúp tách biệt logic xử lý và hiển thị.
+Dự án Battleship (Bắn Tàu) cổ điển đã được nâng cấp toàn diện từ Java Swing sang **JavaFX 17** với giao diện hiện đại, tính năng phong phú, tích hợp Gradle và hệ thống AI hoàn chỉnh.
 
 ## 🌟 Tính năng nổi bật
-* **Giao diện trực quan:** Hệ thống lưới 10x10 với các nút bấm tương tác mượt mà.
-* **Mô hình 2 bảng:** Hiển thị đồng thời bảng của Người chơi (Hạm đội) và bảng của Đối thủ (Vùng biển bắn phá).
-* **Đặt tàu ngẫu nhiên:** Tự động sắp xếp 5 loại tàu (dài 5, 4, 3, 3, 2) cho cả hai bên dựa trên logic kiểm tra va chạm và tràn viền.
-* **Kiến trúc MVC:** * **Model:** Quản lý tọa độ `Node`, hạm đội `Ship` và logic bàn cờ `Board`.
-    * **View:** Xử lý hiển thị lưới nút bấm qua `BoardPanel`.
-    * **Controller:** Điều phối sự kiện click chuột, cập nhật logic và phản hồi lên giao diện.
+* **Giao diện Modern Naval:** Các màn hình (Menu, Setup, Battle) được thiết kế hiện đại bằng CSS và các Node tùy chỉnh.
+* **Trải nghiệm kéo thả (Drag & Drop):** Hỗ trợ kéo thuyền từ bến đỗ thả trực tiếp lên sa bàn.
+* **Xoay tàu linh hoạt:** Tính năng **Click Đúp (Double-Click)** cho phép bạn xoay 90 độ chiếc tàu ngay tại đúng khớp nối (điểm pivot) mà bạn vừa click vào.
+* **Mô hình AI đa mức độ:** Tích hợp Bot đối thủ với 3 mức độ ngắm bắn thông minh (Easy, Medium, Hard).
+* **Kiến trúc hướng sự kiện:** Tách biệt triệt để Logic cốt lõi (Model) và Giao diện UI (Screens/Components) thông qua các Listener.
 
-## 📂 Cấu trúc thư mục (Package Structure)
-Dự án được tổ chức như sau để đảm bảo tính chuyên nghiệp:
+## 📂 Cấu trúc thư mục
 
 ```text
 BattleshipGUI/
-└── src/
-    ├── battleship/
-    │   └── Main.java             # Khởi tạo và chạy ứng dụng
-    ├── battleship.model/
-    │   ├── Node.java             # Trạng thái ô vuông (SHIP, HIT, MISS,...)
-    │   ├── Ship.java             # Thuộc tính tàu (length, direction, location)
-    │   └── Board.java            # Logic bàn cờ và kiểm tra đặt tàu
-    ├── battleship.view/
-    │   └── BoardPanel.java       # Giao diện lưới 100 nút bấm
-    └── battleship.controller/
-        └── GameController.java   # Điều khiển lượt chơi và sự kiện
+├── src/main/resources/        # Tài nguyên tĩnh (app.css, hình ảnh)
+├── src/battleship/            # Cấu trúc mã nguồn chính
+│   ├── model/                 # Logic lõi, kết cấu bàn cờ
+│   ├── ai/                    # Khối dữ liệu AI thông minh
+│   └── fx/                    # Hệ thống hiển thị bằng JavaFX
+```
+
+## 🛠️ Yêu cầu môi trường
+* **Java SDK:** Tối thiểu phiên bản 23 (Hoặc các bản Java hỗ trợ JavaFX mới).
+* Mạng Internet để Gradle tự động kéo các gói dependencies lần đầu.
+
+## 🚀 Hướng dẫn chạy (How to run)
+
+Ứng dụng được cấu hình đóng gói thông qua công cụ build **Gradle**. Bạn không cần cài đặt cấu hình IDE lằng nhằng, chỉ cần làm theo bước sau.
+
+Mở Terminal (hoặc Powershell/Command Prompt) trỏ tại thư mục gốc của dự án.
+
+**1. Đối với hệ điều hành Windows:**
+(Nếu máy tính bạn đã cài sẵn `gradle` toàn cầu)
+```powershell
+gradle run
+```
+(Nếu sử dụng trình Wrapper đính kèm)
+```powershell
+.\gradlew run
+```
+
+**2. Đối với Linux / macOS:**
+```bash
+./gradlew run
+```
+
+Lệnh trên sẽ tự động tải thư viện liên quan của OpenJFX, biên dịch mã nguồn và khởi động trò chơi ngay lập tức. Chúc bạn chơi game vui vẻ!

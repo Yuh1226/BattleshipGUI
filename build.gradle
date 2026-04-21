@@ -1,0 +1,39 @@
+plugins {
+    id 'application'
+    id 'org.openjfx.javafxplugin' version '0.0.14'
+}
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(23)
+    }
+}
+
+javafx {
+    version = '17.0.10'
+    modules = [ 'javafx.controls', 'javafx.graphics' ]
+}
+
+application {
+    mainClass = 'battleship.Main'
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = [ 'src' ]
+        }
+        resources {
+            srcDirs = [ 'src/main/resources' ]
+        }
+    }
+    test {
+        java {
+            srcDirs = [ 'test' ]
+        }
+    }
+}

@@ -1,0 +1,138 @@
+.root {
+    -fx-font-family: "Segoe UI", Helvetica, Arial, sans-serif;
+    -fx-background-color: linear-gradient(to bottom right, #E0F2F1, #B2EBF2);
+}
+
+.screen-root {
+    -fx-padding: 40;
+    -fx-spacing: 25;
+    -fx-alignment: center;
+    -fx-background-color: rgba(255, 255, 255, 0.4);
+    -fx-background-radius: 20;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);
+}
+
+.screen-title {
+    -fx-font-size: 38px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #006064;
+}
+
+.screen-subtitle {
+    -fx-font-size: 16px;
+    -fx-text-fill: #455A64;
+}
+
+.info-label {
+    -fx-font-size: 14px;
+    -fx-text-fill: #546E7A;
+}
+
+.action-button {
+    -fx-background-color: #00ACC1;
+    -fx-text-fill: white;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-padding: 12 24;
+    -fx-background-radius: 30;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,172,193,0.3), 5, 0, 0, 2);
+}
+
+.action-button:hover {
+    -fx-background-color: #0097A7;
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+}
+
+.secondary-button {
+    -fx-background-color: white;
+    -fx-text-fill: #00838F;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-padding: 10 20;
+    -fx-background-radius: 30;
+    -fx-cursor: hand;
+    -fx-border-color: #00ACC1;
+    -fx-border-radius: 30;
+    -fx-border-width: 2;
+}
+
+.secondary-button:hover {
+    -fx-background-color: #F0F4F4;
+    -fx-scale-x: 1.02;
+    -fx-scale-y: 1.02;
+}
+
+.board-container {
+    -fx-padding: 12;
+    -fx-background-color: rgba(255, 255, 255, 0.9);
+    -fx-background-radius: 16;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 15, 0, 0, 4);
+    -fx-border-color: #B2EBF2;
+    -fx-border-radius: 16;
+}
+
+.board-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #37474F;
+}
+
+.cell-button {
+    -fx-pref-width: 36px;
+    -fx-pref-height: 36px;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-cursor: hand;
+    -fx-transition: all 0.2s;
+}
+
+.state-sea {
+    -fx-background-color: #E1F5FE;
+    -fx-border-color: #B3E5FC;
+    -fx-border-width: 1;
+}
+
+.state-sea:hover {
+    -fx-background-color: #B3E5FC;
+}
+
+.state-ship {
+    -fx-background-color: #455A64;
+    -fx-effect: innershadow(three-pass-box, rgba(0,0,0,0.3), 5, 0, 0, 1);
+}
+
+.state-hit {
+    -fx-background-color: #FF5252;
+    -fx-effect: dropshadow(three-pass-box, rgba(255,82,82,0.4), 8, 0, 0, 0);
+}
+
+.state-miss {
+    -fx-background-color: #CFD8DC;
+}
+
+.state-sunk {
+    -fx-background-color: #263238;
+}
+
+.status-emphasis {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #00796B;
+}
+
+.setup-tools {
+    -fx-spacing: 15;
+    -fx-alignment: center;
+}
+
+.setup-actions {
+    -fx-spacing: 15;
+    -fx-alignment: center;
+}
+
+.battle-boards {
+    -fx-spacing: 30;
+    -fx-alignment: center;
+}
