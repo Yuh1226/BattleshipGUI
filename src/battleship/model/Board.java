@@ -39,11 +39,21 @@ public class Board {
 			int r = row + (direction == Ship.VERTICAl ? i : 0);
 			int c = col + (direction == Ship.HORIZONTAL ? i : 0);
 
-			if (r < 0 || r >= 10 || c < 0 || c >= 10)
+			if (r < 0 || r >= size || c < 0 || c >= size)
 				return false;
 
-			if (grid[r][c].getVal() == Node.SHIP)
-				return false;
+			// Check current cell and all 8 surrounding cells for existing ships
+			for (int dr = -1; dr <= 1; dr++) {
+				for (int dc = -1; dc <= 1; dc++) {
+					int nr = r + dr;
+					int nc = c + dc;
+					if (nr >= 0 && nr < size && nc >= 0 && nc < size) {
+						if (grid[nr][nc].getVal() == Node.SHIP) {
+							return false;
+						}
+					}
+				}
+			}
 		}
 		return true;
 	}

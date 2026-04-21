@@ -1,5 +1,6 @@
 package battleship.fx.screens;
 
+import battleship.fx.LocalizationManager;
 import battleship.fx.components.BoardGrid;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -11,22 +12,35 @@ import javafx.scene.layout.VBox;
 public class BattleScreen extends VBox {
     public interface Listener {
         void onBackToMenu();
+        void onOpenSettings();
     }
 
     private Listener listener;
     private final BoardGrid playerBoard = new BoardGrid();
     private final BoardGrid enemyBoard = new BoardGrid();
-    private final Label turnLabel = new Label("Your turn");
-    private final Label statusLabel = new Label("Pick a target.");
+    private final Label titleLabel = new Label();
+    private final Label turnLabel = new Label();
+    private final Label statusLabel = new Label();
+    private final Label playerLabel = new Label("Player");
+    private final Label enemyLabel = new Label("Enemy");
+    private final Button backBtn = new Button();
 
     public BattleScreen() {
         setAlignment(Pos.CENTER);
         setSpacing(20);
-        setPadding(new Insets(40));
+        setPadding(new Insets(10, 40, 40, 40));
         getStyleClass().add("screen-root");
 
-        Label title = new Label("Battle");
-        title.getStyleClass().add("screen-title");
+        // Top bar for settings
+        HBox topBar = new HBox();
+        topBar.setAlignment(Pos.TOP_RIGHT);
+        Button settingsBtn = new Button("⚙");
+        settingsBtn.getStyleClass().add("secondary-button");
+        settingsBtn.setStyle("-fx-font-size: 18px; -fx-padding: 5 10;");
+        settingsBtn.setOnAction(e -> { if(listener != null) listener.onOpenSettings(); });
+        topBar.getChildren().add(settingsBtn);
+
+        titleLabel.getStyleClass().add("screen-title");
 
         turnLabel.getStyleClass().add("status-emphasis");
         statusLabel.getStyleClass().add("info-label");
@@ -35,27 +49,31 @@ public class BattleScreen extends VBox {
         boards.setAlignment(Pos.CENTER);
         boards.getStyleClass().add("battle-boards");
 
-        VBox playerBox = new VBox(8, new Label("Player"), playerBoard);
+        VBox playerBox = new VBox(8, playerLabel, playerBoard);
         playerBox.setAlignment(Pos.CENTER);
-        ((Label) playerBox.getChildren().get(0)).getStyleClass().add("board-title");
+        playerLabel.getStyleClass().add("board-title");
         playerBoard.getStyleClass().add("board-container");
 
-        VBox enemyBox = new VBox(8, new Label("Enemy"), enemyBoard);
+        VBox enemyBox = new VBox(8, enemyLabel, enemyBoard);
         enemyBox.setAlignment(Pos.CENTER);
-        ((Label) enemyBox.getChildren().get(0)).getStyleClass().add("board-title");
+        enemyLabel.getStyleClass().add("board-title");
         enemyBoard.getStyleClass().add("board-container");
 
         boards.getChildren().addAll(playerBox, enemyBox);
 
-        Button back = new Button("Back to Menu");
-        back.getStyleClass().add("secondary-button");
-        back.setOnAction(event -> {
-            if (listener != null) {
-                listener.onBackToMenu();
-            }
+        backBtn.getStyleClass().add("secondary-button");
+        backBtn.setOnAction(event -> {
+            if (listener != null) listener.onBackToMenu();
         });
 
-        getChildren().addAll(title, turnLabel, statusLabel, boards, back);
+        getChildren().addAll(topBar, titleLabel, turnLabel, statusLabel, boards, backBtn);
+        updateLanguage();
+    }
+
+    public void updateLanguage() {
+        titleLabel.setText("BATTLE"); // Or LocalizationManager.get("battle")
+        backBtn.setText(LocalizationManager.get("return_hq"));
+        // labels for player/enemy might need translation if you add to Manager
     }
 
     public void setListener(Listener listener) {

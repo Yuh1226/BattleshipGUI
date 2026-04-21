@@ -1,13 +1,12 @@
 package battleship.fx.screens;
 
+import battleship.fx.LocalizationManager;
 import battleship.fx.components.BoardGrid;
 import java.util.ArrayList;
 import java.util.List;
-import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -20,102 +19,112 @@ public class SetupScreen extends VBox {
         void onRandomize();
         void onReset();
         void onShipSelected(int length);
+        void onOpenSettings();
     }
 
     private final List<Listener> listeners = new ArrayList<>();
     private final BoardGrid setupBoard = new BoardGrid();
     private final HBox shipDock = new HBox(10);
-    private final Label remainingLabel = new Label();
+    private final Label titleLabel = new Label();
+    private final Label hintLabel = new Label();
     private final Label statusLabel = new Label();
-    private final Button rotateButton = new Button("Rotate: Horizontal");
-    private final Button continueButton = new Button("Continue");
+    private final Label fleetLabel = new Label();
+    private final Button rotateButton = new Button();
+    private final Button randomButton = new Button();
+    private final Button resetButton = new Button();
+    private final Button continueButton = new Button();
+    private final Button backButton = new Button();
+
+    private boolean isVertical = false;
 
     public SetupScreen() {
         setAlignment(Pos.CENTER);
-        setSpacing(20);
-        setPadding(new Insets(40));
+        setSpacing(5);
+        setPadding(new Insets(5, 20, 10, 20));
         getStyleClass().add("screen-root");
 
-        Label title = new Label("FLEET DEPLOYMENT");
-        title.getStyleClass().add("screen-title");
+        // Top bar for settings
+        HBox topBar = new HBox();
+        topBar.setAlignment(Pos.TOP_RIGHT);
+        Button settingsBtn = new Button("⚙");
+        settingsBtn.getStyleClass().add("secondary-button");
+        settingsBtn.setStyle("-fx-font-size: 14px; -fx-padding: 2 6;");
+        settingsBtn.setOnAction(e -> { for(Listener l : listeners) l.onOpenSettings(); });
+        topBar.getChildren().add(settingsBtn);
 
-        Label hint = new Label("Position your naval assets on the grid.");
-        hint.getStyleClass().add("screen-subtitle");
+        titleLabel.getStyleClass().add("screen-title");
+        hintLabel.getStyleClass().add("screen-subtitle");
 
-        HBox controlButtons = new HBox(15);
+        HBox controlButtons = new HBox(8);
         controlButtons.setAlignment(Pos.CENTER);
 
-        rotateButton.setPrefWidth(160);
+        rotateButton.setPrefWidth(130);
         rotateButton.getStyleClass().add("secondary-button");
         rotateButton.setOnAction(event -> {
-            for (Listener listener : listeners) {
-                listener.onRotate();
-            }
+            for (Listener listener : listeners) listener.onRotate();
         });
 
-        Button random = new Button("Auto-Deploy");
-        random.setPrefWidth(160);
-        random.getStyleClass().add("secondary-button");
-        random.setOnAction(event -> {
-            for (Listener listener : listeners) {
-                listener.onRandomize();
-            }
+        randomButton.setPrefWidth(130);
+        randomButton.getStyleClass().add("secondary-button");
+        randomButton.setOnAction(event -> {
+            for (Listener listener : listeners) listener.onRandomize();
         });
 
-        Button reset = new Button("Clear Board");
-        reset.setPrefWidth(160);
-        reset.getStyleClass().add("secondary-button");
-        reset.setOnAction(event -> {
-            for (Listener listener : listeners) {
-                listener.onReset();
-            }
+        resetButton.setPrefWidth(130);
+        resetButton.getStyleClass().add("secondary-button");
+        resetButton.setOnAction(event -> {
+            for (Listener listener : listeners) listener.onReset();
         });
 
-        controlButtons.getChildren().addAll(rotateButton, random, reset);
+        controlButtons.getChildren().addAll(rotateButton, randomButton, resetButton);
 
         shipDock.setAlignment(Pos.CENTER);
-        shipDock.setSpacing(20);
-        shipDock.setPadding(new Insets(10));
+        shipDock.setSpacing(10);
+        shipDock.setPadding(new Insets(2));
         shipDock.getStyleClass().add("ship-dock");
 
-        VBox shipSelection = new VBox(10, new Label("AVAILABLE FLEET - DRAG OR CLICK TO SELECT"), shipDock);
+        VBox shipSelection = new VBox(2, fleetLabel, shipDock);
         shipSelection.setAlignment(Pos.CENTER);
-        ((Label)shipSelection.getChildren().get(0)).getStyleClass().add("info-label");
-        shipSelection.setStyle("-fx-background-color: rgba(255,255,255,0.5); -fx-background-radius: 15; -fx-padding: 15;");
+        fleetLabel.getStyleClass().add("info-label");
+        shipSelection.setStyle("-fx-background-color: rgba(255,255,255,0.5); -fx-background-radius: 8; -fx-padding: 5;");
 
-        HBox actions = new HBox(20);
+        HBox actions = new HBox(12);
         actions.setAlignment(Pos.CENTER);
         actions.getStyleClass().add("setup-actions");
 
-        Button back = new Button("Cancel");
-        back.setPrefWidth(120);
-        back.getStyleClass().add("secondary-button");
-        back.setOnAction(event -> {
-            for (Listener listener : listeners) {
-                listener.onBack();
-            }
+        backButton.setPrefWidth(90);
+        backButton.getStyleClass().add("secondary-button");
+        backButton.setOnAction(event -> {
+            for (Listener listener : listeners) listener.onBack();
         });
 
-        continueButton.setText("START BATTLE");
-        continueButton.setPrefWidth(180);
+        continueButton.setPrefWidth(150);
         continueButton.getStyleClass().add("action-button");
         continueButton.setOnAction(event -> {
-            for (Listener listener : listeners) {
-                listener.onContinue();
-            }
+            for (Listener listener : listeners) listener.onContinue();
         });
 
-        actions.getChildren().addAll(back, continueButton);
+        actions.getChildren().addAll(backButton, continueButton);
 
-        remainingLabel.getStyleClass().add("info-label");
         statusLabel.getStyleClass().add("status-emphasis");
         setupBoard.getStyleClass().add("board-container");
         
         HBox boardWrapper = new HBox(setupBoard);
         boardWrapper.setAlignment(Pos.CENTER);
         
-        // Stack elements vertically: Title -> Board -> Selection -> Controls -> Actions
-        getChildren().addAll(title, hint, statusLabel, boardWrapper, shipSelection, controlButtons, actions);
+        getChildren().addAll(topBar, titleLabel, hintLabel, statusLabel, boardWrapper, shipSelection, controlButtons, actions);
+        updateLanguage();
+    }
+
+    public void updateLanguage() {
+        titleLabel.setText(LocalizationManager.get("fleet_deployment"));
+        hintLabel.setText(LocalizationManager.get("position_assets"));
+        fleetLabel.setText(LocalizationManager.get("available_fleet"));
+        randomButton.setText(LocalizationManager.get("auto_deploy"));
+        resetButton.setText(LocalizationManager.get("clear_board"));
+        backButton.setText(LocalizationManager.get("cancel"));
+        continueButton.setText(LocalizationManager.get("start_battle"));
+        setRotationLabel(isVertical);
     }
 
     public void addListener(Listener listener) {
@@ -129,33 +138,29 @@ public class SetupScreen extends VBox {
     public void setShipsRemaining(List<Integer> remainingShips, int selectedLength) {
         shipDock.getChildren().clear();
         for (Integer length : remainingShips) {
-            HBox shipVisual = new HBox(2);
+            HBox shipVisual = new HBox(1);
             shipVisual.getStyleClass().add("draggable-ship");
             if (length == selectedLength) {
-                shipVisual.setStyle("-fx-cursor: hand; -fx-padding: 5; -fx-background-color: rgba(0, 172, 193, 0.2); -fx-background-radius: 5; -fx-border-color: #00ACC1; -fx-border-radius: 5; -fx-border-width: 1;");
+                shipVisual.setStyle("-fx-cursor: hand; -fx-padding: 3; -fx-background-color: rgba(0, 172, 193, 0.2); -fx-background-radius: 5; -fx-border-color: #00ACC1; -fx-border-radius: 5; -fx-border-width: 1;");
             } else {
-                shipVisual.setStyle("-fx-cursor: hand; -fx-padding: 5; -fx-border-color: transparent; -fx-border-width: 1;");
+                shipVisual.setStyle("-fx-cursor: hand; -fx-padding: 3; -fx-border-color: transparent; -fx-border-width: 1;");
             }
 
             for(int i = 0; i < length; i++) {
                 Button cell = new Button();
-                cell.setPrefSize(20, 20);
-                cell.setMinSize(20, 20);
-                cell.setMaxSize(20, 20);
+                cell.setPrefSize(16, 16);
+                cell.setMinSize(16, 16);
+                cell.setMaxSize(16, 16);
                 cell.getStyleClass().addAll("cell-button", "state-ship");
                 cell.setFocusTraversable(false);
                 cell.setMouseTransparent(true);
                 shipVisual.getChildren().add(cell);
             }
             
-            // Selection by click
             shipVisual.setOnMouseClicked(event -> {
-                for (Listener listener : listeners) {
-                    listener.onShipSelected(length);
-                }
+                for (Listener listener : listeners) listener.onShipSelected(length);
             });
 
-            // Selection by drag
             shipVisual.setOnDragDetected(event -> {
                 javafx.scene.input.Dragboard db = shipVisual.startDragAndDrop(javafx.scene.input.TransferMode.MOVE);
                 javafx.scene.input.ClipboardContent content = new javafx.scene.input.ClipboardContent();
@@ -166,11 +171,11 @@ public class SetupScreen extends VBox {
             
             shipDock.getChildren().add(shipVisual);
         }
-        remainingLabel.setText("Ships to place: " + remainingShips.size());
     }
 
     public void setRotationLabel(boolean vertical) {
-        rotateButton.setText(vertical ? "Rotate: Vertical" : "Rotate: Horizontal");
+        this.isVertical = vertical;
+        rotateButton.setText(vertical ? LocalizationManager.get("rotate_v") : LocalizationManager.get("rotate_h"));
     }
 
     public void setContinueEnabled(boolean enabled) {
@@ -178,6 +183,7 @@ public class SetupScreen extends VBox {
     }
 
     public void setStatusText(String text) {
+        // This might need translation too, but it often comes from logic
         statusLabel.setText(text);
     }
 }

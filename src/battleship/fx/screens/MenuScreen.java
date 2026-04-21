@@ -6,12 +6,24 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 
+import battleship.fx.LocalizationManager;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.layout.VBox;
+
 public class MenuScreen extends VBox {
     public interface Listener {
         void onStart();
+        void onSettings();
     }
 
     private Listener listener;
+    private final Label title = new Label();
+    private final Label subtitle = new Label();
+    private final Button startButton = new Button();
+    private final Button settingsButton = new Button();
 
     public MenuScreen() {
         setAlignment(Pos.CENTER);
@@ -19,13 +31,12 @@ public class MenuScreen extends VBox {
         setPadding(new Insets(40));
         getStyleClass().add("screen-root");
 
-        Label title = new Label("BATTLESHIP");
         title.getStyleClass().add("screen-title");
-
-        Label subtitle = new Label("Tactical Naval Warfare");
         subtitle.getStyleClass().add("screen-subtitle");
 
-        Button startButton = new Button("START MISSION");
+        VBox buttons = new VBox(15);
+        buttons.setAlignment(Pos.CENTER);
+
         startButton.setPrefWidth(220);
         startButton.getStyleClass().add("action-button");
         startButton.setOnAction(event -> {
@@ -34,10 +45,28 @@ public class MenuScreen extends VBox {
             }
         });
 
+        settingsButton.setPrefWidth(220);
+        settingsButton.getStyleClass().add("secondary-button");
+        settingsButton.setOnAction(event -> {
+            if (listener != null) {
+                listener.onSettings();
+            }
+        });
+
+        buttons.getChildren().addAll(startButton, settingsButton);
+
         VBox content = new VBox(10, title, subtitle);
         content.setAlignment(Pos.CENTER);
 
-        getChildren().addAll(content, startButton);
+        getChildren().addAll(content, buttons);
+        updateLanguage();
+    }
+
+    public void updateLanguage() {
+        title.setText("BATTLESHIP"); // Keep original or translate
+        subtitle.setText(LocalizationManager.get("tactical_warfare"));
+        startButton.setText(LocalizationManager.get("start_mission"));
+        settingsButton.setText(LocalizationManager.get("settings"));
     }
 
     public void setListener(Listener listener) {

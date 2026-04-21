@@ -17,7 +17,7 @@ import javafx.util.Duration;
 
 public class FxGameController {
 	public interface GameEventListener {
-		void onGameOver(boolean playerWon);
+		void onGameOver(boolean playerWon, int shots, int hits, int sunk);
 	}
 
     private final Board p1board;
@@ -29,6 +29,8 @@ public class FxGameController {
     private final BattleScreen battleScreen;
 
     private int p1Hits = 0;
+    private int p1Shots = 0;
+    private int p1Sunk = 0;
     private int p2Hits = 0;
     private final int winScore = 17;
     private boolean isGameOver = false;
@@ -52,7 +54,7 @@ public class FxGameController {
         this.p2view = battleScreen.getEnemyBoard();
 
         setupView.setOnCellClicked(this::handleSetupPlacement);
-        setupView.setOnCellDoubleClicked(this::handleSetupDoubleClick);
+        setupView.setOnCellRightClicked(this::handleSetupRemoveShip);
         setupView.setOnCellDragDropped(this::handleSetupDragDropped);
         p2view.setOnCellClicked(this::handlePlayerFire);
 
@@ -87,6 +89,11 @@ public class FxGameController {
             public void onShipSelected(int length) {
                 selectedLength = length;
                 setupScreen.setShipsRemaining(remainingShips, selectedLength);
+            }
+
+            @Override
+            public void onOpenSettings() {
+                // handled in Main
             }
         });
 
@@ -132,6 +139,8 @@ public class FxGameController {
         p2board.reset();
         randomPlaceShips(p2board);
         p1Hits = 0;
+        p1Shots = 0;
+        p1Sunk = 0;
         p2Hits = 0;
         isGameOver = false;
         isBotThinking = false;
@@ -190,13 +199,62 @@ public class FxGameController {
         }
     }
 
+    private void handleSetupRemoveShip(int row, int col) {
+        Ship ship = p1board.getShipAt(row, col);
+        if (ship != null) {
+            p1board.removeShip(ship);
+            remainingShips.add(ship.getLength());
+            remainingShips.sort((a, b) -> b - a);
+            selectedLength = remainingShips.get(0);
+            
+            setupView.reset();
+            renderShips(p1board, setupView);
+            setupScreen.setShipsRemaining(remainingShips, selectedLength);
+            setupScreen.setContinueEnabled(false);
+            setupScreen.setStatusText("Ship removed and returned to fleet.");
+        }
+    }
+
     private void handleSetupPlacement(int row, int col) {
+        // If clicking on an existing ship, rotate it
+        Ship existingShip = p1board.getShipAt(row, col);
+        if (existingShip != null) {
+            // Store old values in case rotation fails
+            int oldRow = existingShip.getRow();
+            int oldCol = existingShip.getCol();
+            int oldDir = existingShip.getDirection();
+            
+            p1board.removeShip(existingShip);
+            
+            int newDir = (oldDir == Ship.HORIZONTAL) ? Ship.VERTICAl : Ship.HORIZONTAL;
+            // Pivot logic: find index of clicked cell within the ship
+            int offset = (oldDir == Ship.HORIZONTAL) ? (col - oldCol) : (row - oldRow);
+            int newRow = (newDir == Ship.VERTICAl) ? (row - offset) : row;
+            int newCol = (newDir == Ship.HORIZONTAL) ? (col - offset) : col;
+            
+            if (p1board.canPlaceShip(existingShip.getLength(), newRow, newCol, newDir)) {
+                existingShip.setLocation(newRow, newCol);
+                existingShip.setDirection(newDir);
+                setupScreen.setStatusText("Ship rotated.");
+            } else {
+                // Restore if cannot rotate
+                existingShip.setLocation(oldRow, oldCol);
+                existingShip.setDirection(oldDir);
+                setupScreen.setStatusText("Cannot rotate: Collision or out of bounds.");
+            }
+            
+            p1board.placeShip(existingShip);
+            setupView.reset();
+            renderShips(p1board, setupView);
+            return;
+        }
+
         if (remainingShips.isEmpty()) {
             return;
         }
 
         if (!p1board.canPlaceShip(selectedLength, row, col, direction)) {
-            setupScreen.setStatusText("Invalid position. Try another cell or rotate.");
+            setupScreen.setStatusText("Invalid position: Ships must not touch each other.");
             return;
         }
 
@@ -207,7 +265,7 @@ public class FxGameController {
         renderShipCells(row, col, selectedLength, direction, setupView);
 
         remainingShips.remove(Integer.valueOf(selectedLength));
-        if (!remainingShips.contains(selectedLength) && !remainingShips.isEmpty()) {
+        if (!remainingShips.isEmpty()) {
             selectedLength = remainingShips.get(0);
         }
         setupScreen.setShipsRemaining(remainingShips, selectedLength);
@@ -215,7 +273,7 @@ public class FxGameController {
         if (remainingShips.isEmpty()) {
             setupScreen.setStatusText("All ships placed. Press Continue.");
         } else {
-            setupScreen.setStatusText("Ship placed. Remaining ships: " + remainingShips);
+            setupScreen.setStatusText("Ship placed. Next ship: " + selectedLength);
         }
     }
 
@@ -229,12 +287,14 @@ public class FxGameController {
             return;
         }
 
+        p1Shots++;
         boolean isHit = p2board.fireAt(row, col);
         p2view.updateButtonState(row, col, isHit);
 
         if (isHit) {
             p1Hits++;
             if (p2board.isSunkAt(row, col)) {
+                p1Sunk++;
                 markSunkShip(p2board, p2view, row, col);
                 battleScreen.setStatusText("Hit! Enemy ship sunk.");
             } else {
@@ -384,7 +444,7 @@ public class FxGameController {
             battleScreen.setStatusText("You win!");
             battleScreen.setEnemyEnabled(false);
             if (gameEventListener != null) {
-                gameEventListener.onGameOver(true);
+                gameEventListener.onGameOver(true, p1Shots, p1Hits, p1Sunk);
             }
         } else if (p2Hits == winScore) {
             isGameOver = true;
@@ -393,7 +453,7 @@ public class FxGameController {
             battleScreen.setStatusText("You lose.");
             battleScreen.setEnemyEnabled(false);
             if (gameEventListener != null) {
-                gameEventListener.onGameOver(false);
+                gameEventListener.onGameOver(false, p1Shots, p1Hits, p1Sunk);
             }
         }
     }

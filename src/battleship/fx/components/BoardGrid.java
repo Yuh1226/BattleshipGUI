@@ -17,9 +17,9 @@ public class BoardGrid extends GridPane {
         for (int r = 0; r < SIZE; r++) {
             for (int c = 0; c < SIZE; c++) {
                 Button cell = new Button();
-                cell.setPrefSize(32, 32);
-                cell.setMinSize(32, 32);
-                cell.setMaxSize(32, 32);
+                cell.setPrefSize(26, 26);
+                cell.setMinSize(26, 26);
+                cell.setMaxSize(26, 26);
                 cell.setFocusTraversable(false);
                 cell.getStyleClass().add("cell-button");
                 applyState(cell, "state-sea");
@@ -51,6 +51,20 @@ public class BoardGrid extends GridPane {
                 // Add event filter or handler for double click
                 buttons[r][c].addEventHandler(javafx.scene.input.MouseEvent.MOUSE_CLICKED, event -> {
                     if (event.getButton() == javafx.scene.input.MouseButton.PRIMARY && event.getClickCount() == 2) {
+                        listener.onCellClicked(row, col);
+                    }
+                });
+            }
+        }
+    }
+
+    public void setOnCellRightClicked(CellClickListener listener) {
+        for (int r = 0; r < SIZE; r++) {
+            for (int c = 0; c < SIZE; c++) {
+                final int row = r;
+                final int col = c;
+                buttons[r][c].addEventHandler(javafx.scene.input.MouseEvent.MOUSE_CLICKED, event -> {
+                    if (event.getButton() == javafx.scene.input.MouseButton.SECONDARY) {
                         listener.onCellClicked(row, col);
                     }
                 });
