@@ -13,6 +13,11 @@ import javafx.util.Duration;
 public class ScreenManager {
     private final Map<String, Pane> screens = new HashMap<>();
     private final StackPane root = new StackPane();
+    private final StackPane screenContainer = new StackPane();
+
+    public ScreenManager() {
+        root.getChildren().add(screenContainer);
+    }
 
     public StackPane getRoot() {
         return root;
@@ -28,10 +33,10 @@ public class ScreenManager {
             throw new IllegalArgumentException("Unknown screen: " + name);
         }
 
-        if (root.getChildren().isEmpty()) {
-            root.getChildren().add(screen);
+        if (screenContainer.getChildren().isEmpty()) {
+            screenContainer.getChildren().add(screen);
         } else {
-            Pane oldScreen = (Pane) root.getChildren().get(0);
+            Pane oldScreen = (Pane) screenContainer.getChildren().get(0);
             if (oldScreen == screen) return;
 
             // Simple transition: Fade out old, Fade in new
@@ -48,7 +53,7 @@ public class ScreenManager {
             slideIn.setToY(0);
 
             fadeOut.setOnFinished(event -> {
-                root.getChildren().setAll(screen);
+                screenContainer.getChildren().setAll(screen);
                 ParallelTransition parallel = new ParallelTransition(fadeIn, slideIn);
                 parallel.play();
             });

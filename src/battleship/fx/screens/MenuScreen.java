@@ -23,7 +23,6 @@ public class MenuScreen extends VBox {
     private final Label title = new Label();
     private final Label subtitle = new Label();
     private final Button startButton = new Button();
-    private final Button settingsButton = new Button();
 
     public MenuScreen() {
         setAlignment(Pos.CENTER);
@@ -37,7 +36,7 @@ public class MenuScreen extends VBox {
         VBox buttons = new VBox(15);
         buttons.setAlignment(Pos.CENTER);
 
-        startButton.setPrefWidth(220);
+        startButton.setPrefWidth(280);
         startButton.getStyleClass().add("action-button");
         startButton.setOnAction(event -> {
             if (listener != null) {
@@ -45,15 +44,7 @@ public class MenuScreen extends VBox {
             }
         });
 
-        settingsButton.setPrefWidth(220);
-        settingsButton.getStyleClass().add("secondary-button");
-        settingsButton.setOnAction(event -> {
-            if (listener != null) {
-                listener.onSettings();
-            }
-        });
-
-        buttons.getChildren().addAll(startButton, settingsButton);
+        buttons.getChildren().addAll(startButton);
 
         VBox content = new VBox(10, title, subtitle);
         content.setAlignment(Pos.CENTER);
@@ -66,7 +57,6 @@ public class MenuScreen extends VBox {
         title.setText("BATTLESHIP"); // Keep original or translate
         subtitle.setText(LocalizationManager.get("tactical_warfare"));
         startButton.setText(LocalizationManager.get("start_mission"));
-        settingsButton.setText(LocalizationManager.get("settings"));
     }
 
     public void setListener(Listener listener) {

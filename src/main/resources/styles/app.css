@@ -57,12 +57,33 @@
 }
 
 .board-container {
-    -fx-padding: 6;
+    -fx-padding: 8;
     -fx-background-color: #ffffff;
     -fx-background-radius: 12;
     -fx-border-color: #dddfe2;
     -fx-border-radius: 12;
-    -fx-border-width: 1;
+    -fx-border-width: 2;
+    -fx-opacity: 0.5; /* Dimmed by default */
+}
+
+/* Active board highlight */
+.active-board {
+    -fx-opacity: 1.0 !important;
+}
+
+.player-board.active-board {
+    -fx-border-color: #1877f2;
+    -fx-effect: dropshadow(three-pass-box, rgba(24,119,242,0.4), 15, 0, 0, 0);
+}
+
+.enemy-board.active-board {
+    -fx-border-color: #fa3e3e;
+    -fx-effect: dropshadow(three-pass-box, rgba(250,62,62,0.4), 15, 0, 0, 0);
+}
+
+/* Fix for disabled cells in active board - ensure they stay clear */
+.active-board .cell-button:disabled {
+    -fx-opacity: 1.0 !important;
 }
 
 .board-title {
@@ -71,39 +92,54 @@
     -fx-text-fill: #4b4f56;
 }
 
+.coord-label {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #8d949e;
+}
+
 .cell-button {
     -fx-pref-width: 26px;
     -fx-pref-height: 26px;
     -fx-background-radius: 4;
     -fx-border-radius: 4;
     -fx-cursor: hand;
+    -fx-border-width: 1;
+    -fx-border-color: transparent;
 }
 
 .state-sea {
-    -fx-background-color: #e7f3ff; /* Very Light Blue */
-    -fx-border-color: #c0deff;
-    -fx-border-width: 1;
+    -fx-background-color: #e3f2fd; /* Light Blue */
+    -fx-border-color: #bbdefb;
 }
 
 .state-sea:hover {
-    -fx-background-color: #d1e7ff;
+    -fx-background-color: #bbdefb;
+    -fx-border-color: #1877f2;
 }
 
 .state-ship {
-    -fx-background-color: #4b4f56; /* Dark Gray */
+    -fx-background-color: #455a64; /* Dark Blue Gray */
+    -fx-border-color: #37474f;
 }
 
 .state-hit {
-    -fx-background-color: #fa3e3e; /* Modern Red */
-    -fx-effect: dropshadow(three-pass-box, rgba(250,62,62,0.3), 5, 0, 0, 0);
+    -fx-background-color: #f44336; /* Bright Red */
+    -fx-border-color: #b71c1c;
+    -fx-effect: dropshadow(three-pass-box, rgba(244,67,54,0.4), 5, 0, 0, 0);
 }
 
 .state-miss {
-    -fx-background-color: #bec3c9; /* Gray */
+    /* Stable approach: overlapping backgrounds for a center dot */
+    -fx-background-color: #cfd8dc, #90a4ae; 
+    -fx-background-insets: 0, 8;
+    -fx-background-radius: 4, 100;
+    -fx-border-color: #90a4ae;
 }
 
 .state-sunk {
-    -fx-background-color: #1c1e21; /* Darker blackish */
+    -fx-background-color: #263238; /* Very Dark Gray */
+    -fx-border-color: #000000;
 }
 
 /* Drag & Drop Feedback Classes */
@@ -131,24 +167,41 @@
 }
 
 .log-container {
-    -fx-background-color: #f7f8fa;
-    -fx-background-radius: 8;
+    -fx-background-color: #f7f8fa; /* Light Grey Background */
+    -fx-background-radius: 12;
     -fx-border-color: #ebedf0;
-    -fx-border-radius: 8;
+    -fx-border-radius: 12;
     -fx-border-width: 1;
+    -fx-padding: 5;
+}
+
+/* Ẩn background mặc định của ScrollPane */
+.log-container .viewport {
+    -fx-background-color: transparent;
 }
 
 .log-entry {
-    -fx-font-size: 11px;
-    -fx-text-fill: #606770;
-    -fx-padding: 2 0;
+    -fx-font-size: 12px;
+    -fx-text-fill: #4b4f56;
+    -fx-padding: 6 10;
+    -fx-border-color: transparent transparent #f0f2f5 transparent;
+    -fx-border-width: 0 0 1 0;
 }
 
 .log-entry-highlight {
-    -fx-font-size: 11px;
+    -fx-font-size: 12px;
     -fx-font-weight: bold;
-    -fx-text-fill: #fa3e3e;
-    -fx-padding: 2 0;
+    -fx-text-fill: #fa3e3e; /* Modern Red */
+    -fx-background-color: rgba(250, 62, 62, 0.05);
+    -fx-padding: 6 10;
+    -fx-border-color: transparent transparent #ffe9e9 transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.log-entry-time {
+    -fx-font-size: 10px;
+    -fx-text-fill: #90949c;
+    -fx-font-weight: bold;
 }
 
 .fleet-indicator-ship {
@@ -203,4 +256,17 @@
 .settings-check {
     -fx-font-size: 13px;
     -fx-text-fill: #1c1e21;
+}
+
+.timer-bar {
+    -fx-accent: #1877f2;
+}
+
+.timer-bar .track {
+    -fx-background-color: #e4e6eb;
+    -fx-background-radius: 4;
+}
+
+.timer-bar .bar {
+    -fx-background-radius: 4;
 }

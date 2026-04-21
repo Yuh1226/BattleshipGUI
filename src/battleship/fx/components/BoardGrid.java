@@ -28,6 +28,28 @@ public class BoardGrid extends GridPane {
         setVgap(2);
         setPadding(new Insets(5));
 
+        // Add column labels (A-J) at row 0, starting from column 1
+        for (int c = 0; c < SIZE; c++) {
+            javafx.scene.control.Label label = new javafx.scene.control.Label(String.valueOf((char)('A' + c)));
+            label.getStyleClass().add("coord-label");
+            label.setPrefSize(26, 26);
+            label.setMinSize(26, 26);
+            label.setMaxSize(26, 26);
+            label.setAlignment(javafx.geometry.Pos.CENTER);
+            add(label, c + 1, 0);
+        }
+
+        // Add row labels (1-10) at column 0, starting from row 1
+        for (int r = 0; r < SIZE; r++) {
+            javafx.scene.control.Label label = new javafx.scene.control.Label(String.valueOf(r + 1));
+            label.getStyleClass().add("coord-label");
+            label.setPrefSize(26, 26);
+            label.setMinSize(26, 26);
+            label.setMaxSize(26, 26);
+            label.setAlignment(javafx.geometry.Pos.CENTER);
+            add(label, 0, r + 1);
+        }
+
         for (int r = 0; r < SIZE; r++) {
             for (int c = 0; c < SIZE; c++) {
                 Button cell = new Button();
@@ -38,7 +60,8 @@ public class BoardGrid extends GridPane {
                 cell.getStyleClass().add("cell-button");
                 applyState(cell, "state-sea");
                 buttons[r][c] = cell;
-                add(cell, c, r);
+                // Buttons are offset by 1 because of labels
+                add(cell, c + 1, r + 1);
             }
         }
     }
@@ -180,19 +203,21 @@ public class BoardGrid extends GridPane {
 
     public void shake() {
         TranslateTransition tt = new TranslateTransition(Duration.millis(50), this);
-        tt.setFromX(-5);
+        tt.setFromX(0);
         tt.setToX(5);
         tt.setCycleCount(4);
         tt.setAutoReverse(true);
+        tt.setOnFinished(e -> setTranslateX(0));
         tt.play();
     }
 
     private void shakeCell(Button cell) {
         TranslateTransition tt = new TranslateTransition(Duration.millis(50), cell);
-        tt.setFromX(-2);
+        tt.setFromX(0);
         tt.setToX(2);
         tt.setCycleCount(4);
         tt.setAutoReverse(true);
+        tt.setOnFinished(e -> cell.setTranslateX(0));
         tt.play();
     }
 

@@ -26,6 +26,8 @@ public class BattleScreen extends BorderPane {
     
     private final Label turnLabel = new Label();
     private final Label statusLabel = new Label();
+    private final Label timerLabel = new Label("30s");
+    private final javafx.scene.control.ProgressBar timerProgress = new javafx.scene.control.ProgressBar(1.0);
     
     // Fleet Status
     private final HBox playerFleetStatus = new HBox(5);
@@ -39,22 +41,13 @@ public class BattleScreen extends BorderPane {
         getStyleClass().add("screen-root");
         setPadding(new Insets(10, 20, 10, 20));
 
-        // TOP: Title and Settings
+        // TOP: Title
         HBox topBar = new HBox();
         topBar.setAlignment(Pos.CENTER);
         Label titleLabel = new Label("COMBAT ZONE");
         titleLabel.getStyleClass().add("screen-title");
         
-        HBox rightTop = new HBox();
-        rightTop.setAlignment(Pos.CENTER_RIGHT);
-        Button settingsBtn = new Button("⚙");
-        settingsBtn.getStyleClass().add("secondary-button");
-        settingsBtn.setStyle("-fx-font-size: 14px; -fx-padding: 2 6;");
-        settingsBtn.setOnAction(e -> { if(listener != null) listener.onOpenSettings(); });
-        rightTop.getChildren().add(settingsBtn);
-        HBox.setHgrow(rightTop, Priority.ALWAYS);
-
-        topBar.getChildren().addAll(new Label("      "), titleLabel, rightTop); // Padding for center alignment
+        topBar.getChildren().add(titleLabel);
         setTop(topBar);
 
         // CENTER: Boards
@@ -68,7 +61,7 @@ public class BattleScreen extends BorderPane {
         Label pLabel = new Label("YOUR FLEET");
         pLabel.getStyleClass().add("board-title");
         playerFleetStatus.setAlignment(Pos.CENTER);
-        playerBoard.getStyleClass().add("board-container");
+        playerBoard.getStyleClass().addAll("board-container", "player-board");
         playerSide.getChildren().addAll(pLabel, playerFleetStatus, playerBoard);
 
         // Enemy side
@@ -77,7 +70,7 @@ public class BattleScreen extends BorderPane {
         Label eLabel = new Label("ENEMY SECTOR");
         eLabel.getStyleClass().add("board-title");
         enemyFleetStatus.setAlignment(Pos.CENTER);
-        enemyBoard.getStyleClass().add("board-container");
+        enemyBoard.getStyleClass().addAll("board-container", "enemy-board");
         enemySide.getChildren().addAll(eLabel, enemyFleetStatus, enemyBoard);
 
         centerBox.getChildren().addAll(playerSide, enemySide);
@@ -100,17 +93,42 @@ public class BattleScreen extends BorderPane {
         setRight(rightSide);
 
         // BOTTOM: Turn and Status
-        VBox bottomBar = new VBox(5);
+        VBox bottomBar = new VBox(8);
         bottomBar.setAlignment(Pos.CENTER);
         bottomBar.setPadding(new Insets(10, 0, 0, 0));
+        
         turnLabel.getStyleClass().add("status-emphasis");
         statusLabel.getStyleClass().add("info-label");
-        bottomBar.getChildren().addAll(turnLabel, statusLabel);
+        
+        timerProgress.setPrefWidth(300);
+        timerProgress.getStyleClass().add("timer-bar");
+        timerLabel.getStyleClass().add("info-label");
+        timerLabel.setStyle("-fx-font-weight: bold;");
+        
+        VBox timerBox = new VBox(2, timerProgress, timerLabel);
+        timerBox.setAlignment(Pos.CENTER);
+        
+        bottomBar.getChildren().addAll(turnLabel, timerBox, statusLabel);
         setBottom(bottomBar);
 
         initFleetStatus(playerFleetStatus);
         initFleetStatus(enemyFleetStatus);
         updateLanguage();
+    }
+
+    public void updateTimer(double progress, int secondsRemaining) {
+        timerProgress.setProgress(progress);
+        timerLabel.setText(secondsRemaining + "s");
+        if (secondsRemaining <= 5) {
+            timerLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #fa3e3e;");
+        } else {
+            timerLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #8d949e;");
+        }
+    }
+
+    public void setTimerVisible(boolean visible) {
+        timerProgress.setVisible(visible);
+        timerLabel.setVisible(visible);
     }
 
     private void initFleetStatus(HBox container) {
@@ -133,7 +151,6 @@ public class BattleScreen extends BorderPane {
         HBox container = isPlayer ? playerFleetStatus : enemyFleetStatus;
         container.getChildren().clear();
         
-        // This is a simplified view: 5 indicators, dimmed if not in list
         int[] allLengths = {5, 4, 3, 3, 2};
         List<Integer> tempAlive = new ArrayList<>(aliveShipLengths);
         
@@ -159,9 +176,23 @@ public class BattleScreen extends BorderPane {
     }
 
     public void addLogEvent(String message, boolean highlight) {
-        Label entry = new Label("> " + message);
-        entry.setWrapText(true);
+        String timestamp = java.time.LocalTime.now().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
+        
+        javafx.scene.text.Text timeText = new javafx.scene.text.Text(timestamp + " ");
+        timeText.getStyleClass().add("log-entry-time");
+        timeText.setFill(javafx.scene.paint.Color.web("#90949c"));
+
+        javafx.scene.text.Text msgText = new javafx.scene.text.Text(message);
+        msgText.getStyleClass().add(highlight ? "log-entry-highlight" : "log-entry");
+        if (highlight) {
+            msgText.setFill(javafx.scene.paint.Color.web("#fa3e3e"));
+        } else {
+            msgText.setFill(javafx.scene.paint.Color.web("#4b4f56"));
+        }
+
+        javafx.scene.text.TextFlow entry = new javafx.scene.text.TextFlow(timeText, msgText);
         entry.getStyleClass().add(highlight ? "log-entry-highlight" : "log-entry");
+        
         logContent.getChildren().add(0, entry); // Add to top
     }
 
@@ -170,7 +201,6 @@ public class BattleScreen extends BorderPane {
     }
 
     public void updateLanguage() {
-        // titleLabel might need updating if we kept a reference
         turnLabel.setText(LocalizationManager.get("your_turn"));
     }
 
@@ -186,6 +216,19 @@ public class BattleScreen extends BorderPane {
         return enemyBoard;
     }
 
+    public void updateTurnDisplay(boolean isPlayerTurn) {
+        playerBoard.getStyleClass().remove("active-board");
+        enemyBoard.getStyleClass().remove("active-board");
+        
+        if (isPlayerTurn) {
+            // Player's turn: highlight the target (enemy board)
+            enemyBoard.getStyleClass().add("active-board");
+        } else {
+            // Enemy's turn: highlight the target (player board)
+            playerBoard.getStyleClass().add("active-board");
+        }
+    }
+
     public void setTurnText(String text) {
         turnLabel.setText(text);
     }
@@ -195,10 +238,6 @@ public class BattleScreen extends BorderPane {
     }
 
     public void setEnemyEnabled(boolean enabled) {
-        for (int r = 0; r < BoardGrid.SIZE; r++) {
-            for (int c = 0; c < BoardGrid.SIZE; c++) {
-                enemyBoard.setCellEnabled(r, c, enabled);
-            }
-        }
+        enemyBoard.setDisable(!enabled);
     }
 }

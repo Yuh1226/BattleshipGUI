@@ -35,15 +35,6 @@ public class DifficultyScreen extends VBox {
         setPadding(new Insets(20, 40, 40, 40));
         getStyleClass().add("screen-root");
 
-        // Top bar for settings
-        HBox topBar = new HBox();
-        topBar.setAlignment(Pos.TOP_RIGHT);
-        Button settingsBtn = new Button("⚙");
-        settingsBtn.getStyleClass().add("secondary-button");
-        settingsBtn.setStyle("-fx-font-size: 18px; -fx-padding: 5 10;");
-        settingsBtn.setOnAction(e -> { if(listener != null) listener.onOpenSettings(); });
-        topBar.getChildren().add(settingsBtn);
-
         titleLabel.getStyleClass().add("screen-title");
 
         HBox buttons = new HBox(12);
@@ -53,12 +44,17 @@ public class DifficultyScreen extends VBox {
         normalBtn.getStyleClass().add("action-button");
         hardBtn.getStyleClass().add("action-button");
 
+        easyBtn.setMinWidth(120);
+        normalBtn.setMinWidth(120);
+        hardBtn.setMinWidth(120);
+
         easyBtn.setOnAction(event -> notifyDifficulty(Difficulty.EASY));
         normalBtn.setOnAction(event -> notifyDifficulty(Difficulty.NORMAL));
         hardBtn.setOnAction(event -> notifyDifficulty(Difficulty.HARD));
 
         buttons.getChildren().addAll(easyBtn, normalBtn, hardBtn);
 
+        backBtn.setMinWidth(150);
         backBtn.getStyleClass().add("secondary-button");
         backBtn.setOnAction(event -> {
             if (listener != null) {
@@ -66,7 +62,7 @@ public class DifficultyScreen extends VBox {
             }
         });
 
-        getChildren().addAll(topBar, titleLabel, buttons, backBtn);
+        getChildren().addAll(titleLabel, buttons, backBtn);
         updateLanguage();
     }
 

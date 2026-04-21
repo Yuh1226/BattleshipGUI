@@ -17,7 +17,7 @@ import javafx.util.Duration;
 
 public class FxGameController {
 	public interface GameEventListener {
-		void onGameOver(boolean playerWon, int shots, int hits, int sunk);
+		void onGameOver(boolean playerWon, int shots, int hits, int sunk, String duration, String difficulty);
 	}
 
     private final Board p1board;
@@ -44,6 +44,12 @@ public class FxGameController {
     private int selectedLength = 5;
     private int direction = Ship.HORIZONTAL;
     private GameEventListener gameEventListener;
+
+    // Timer logic
+    private javafx.animation.Timeline turnTimeline;
+    private int secondsRemaining = 30;
+    private static final int MAX_TURN_TIME = 30;
+    private long matchStartTime;
 
     public FxGameController(Board p1board, Board p2board, SetupScreen setupScreen, BattleScreen battleScreen) {
         this.p1board = p1board;
@@ -161,8 +167,55 @@ public class FxGameController {
         renderShips(p1board, p1view);
         disableBoard(p1view);
         battleScreen.setEnemyEnabled(true);
+        battleScreen.updateTurnDisplay(true); // Player turn starts
         battleScreen.setTurnText("Your turn");
         battleScreen.setStatusText("Pick a target.");
+        matchStartTime = System.currentTimeMillis();
+        startTurnTimer();
+    }
+
+    private void startTurnTimer() {
+        stopTurnTimer();
+        secondsRemaining = MAX_TURN_TIME;
+        battleScreen.updateTimer(1.0, secondsRemaining);
+        battleScreen.setTimerVisible(true);
+
+        turnTimeline = new javafx.animation.Timeline(
+            new javafx.animation.KeyFrame(Duration.seconds(1), e -> {
+                secondsRemaining--;
+                double progress = (double) secondsRemaining / MAX_TURN_TIME;
+                battleScreen.updateTimer(progress, secondsRemaining);
+                if (secondsRemaining <= 0) {
+                    handleTimeOut();
+                }
+            })
+        );
+        turnTimeline.setCycleCount(MAX_TURN_TIME);
+        turnTimeline.play();
+    }
+
+    private void stopTurnTimer() {
+        if (turnTimeline != null) {
+            turnTimeline.stop();
+            turnTimeline = null;
+        }
+        battleScreen.setTimerVisible(false);
+    }
+
+    private void handleTimeOut() {
+        stopTurnTimer();
+        if (isGameOver || isBotThinking) return;
+
+        battleScreen.addLogEvent("TIME OUT!", true);
+        // Random shot for player
+        Random rd = new Random();
+        int r, c;
+        do {
+            r = rd.nextInt(10);
+            c = rd.nextInt(10);
+        } while (p2board.getGrid()[r][c].getVal() == Node.HIT || p2board.getGrid()[r][c].getVal() == Node.MISS);
+        
+        handlePlayerFire(r, c);
     }
 
     private void handleSetupDragDropped(int row, int col, String data) {
@@ -296,6 +349,7 @@ public class FxGameController {
             return;
         }
 
+        stopTurnTimer();
         p1Shots++;
         String coord = (char)('A' + col) + "" + (row + 1);
         boolean isHit = p2board.fireAt(row, col);
@@ -317,11 +371,15 @@ public class FxGameController {
                 battleScreen.addLogEvent("Player hit at " + coord, false);
                 battleScreen.setStatusText("Hit!");
             }
+            battleScreen.updateTurnDisplay(true); // Keep enemy board highlighted
             battleScreen.setTurnText("Your turn");
             battleScreen.setEnemyEnabled(true);
-            checkWinCondition();
+            if (!checkWinCondition()) {
+                startTurnTimer();
+            }
         } else if (!isGameOver) {
             battleScreen.addLogEvent("Player missed at " + coord, false);
+            battleScreen.updateTurnDisplay(false); // Switch focus to player board (bot's target)
 			battleScreen.setTurnText("Enemy turn");
 			battleScreen.setStatusText("Miss. Enemy is thinking...");
 			battleScreen.setEnemyEnabled(false);
@@ -330,7 +388,9 @@ public class FxGameController {
     }
 
     private void delayedBotFire() {
+        stopTurnTimer();
         isBotThinking = true;
+        battleScreen.updateTurnDisplay(false); // Highlight target (player board)
         PauseTransition pause = new PauseTransition(Duration.seconds(1));
         pause.setOnFinished(event -> {
             switch (aiLevel) {
@@ -351,6 +411,7 @@ public class FxGameController {
     private void botFireEasy() {
         if (isGameOver) {
             isBotThinking = false;
+            stopTurnTimer();
             return;
         }
 
@@ -377,20 +438,24 @@ public class FxGameController {
                 markSunkShip(p1board, p1view, r, c);
             }
             
-            checkWinCondition();
-            botFireEasy();
+            if (!checkWinCondition()) {
+                botFireEasy();
+            }
         } else {
             battleScreen.addLogEvent("Enemy missed at " + coord, false);
+            battleScreen.updateTurnDisplay(true); // Player turn: highlight enemy board
             battleScreen.setTurnText("Your turn");
             battleScreen.setStatusText("Enemy missed.");
             battleScreen.setEnemyEnabled(true);
             isBotThinking = false;
+            startTurnTimer();
         }
     }
 
     private void botFireMedium() {
         if (isGameOver) {
             isBotThinking = false;
+            stopTurnTimer();
             return;
         }
 
@@ -418,24 +483,26 @@ public class FxGameController {
                 markSunkShip(p1board, p1view, r, c);
             }
 
-            if (!isGameOver) {
-                checkWinCondition();
+            if (!checkWinCondition()) {
                 delayedBotFire();
             } else {
                 isBotThinking = false;
             }
         } else {
             battleScreen.addLogEvent("Enemy missed at " + coord, false);
+            battleScreen.updateTurnDisplay(true); // Player turn: highlight enemy board
             battleScreen.setTurnText("Your turn");
             battleScreen.setStatusText("Enemy missed.");
             battleScreen.setEnemyEnabled(true);
             isBotThinking = false;
+            startTurnTimer();
         }
     }
 
     private void botFireHard() {
         if (isGameOver) {
             isBotThinking = false;
+            stopTurnTimer();
             return;
         }
 
@@ -452,7 +519,6 @@ public class FxGameController {
             p1view.shake();
             battleScreen.addLogEvent("Enemy hit your ship at " + coord, false);
             battleScreen.setStatusText("Enemy hit your ship.");
-            checkWinCondition();
 
             botAI.updateAfterFire(p1board, targetNode, isHit);
 
@@ -465,40 +531,48 @@ public class FxGameController {
                 markSunkShip(p1board, p1view, r, c);
             }
 
-            if (!isGameOver) {
+            if (!checkWinCondition()) {
                 delayedBotFire();
             } else {
                 isBotThinking = false;
             }
         } else {
             battleScreen.addLogEvent("Enemy missed at " + coord, false);
+            battleScreen.updateTurnDisplay(true); // Player turn: highlight enemy board
             battleScreen.setTurnText("Your turn");
             battleScreen.setStatusText("Enemy missed.");
             battleScreen.setEnemyEnabled(true);
             isBotThinking = false;
+            startTurnTimer();
         }
     }
 
-    private void checkWinCondition() {
-        if (p1Hits == winScore) {
+    private boolean checkWinCondition() {
+        if (p1Hits == winScore || p2Hits == winScore) {
             isGameOver = true;
             isBotThinking = false;
+            stopTurnTimer();
+            
+            long durationMillis = System.currentTimeMillis() - matchStartTime;
+            long mins = (durationMillis / 1000) / 60;
+            long secs = (durationMillis / 1000) % 60;
+            String durationStr = String.format("%02d:%02d", mins, secs);
+            
+            String diffStr = LocalizationManager.get("hard");
+            if (aiLevel == BattleshipAI.EASY) diffStr = LocalizationManager.get("easy");
+            else if (aiLevel == BattleshipAI.MEDIUM) diffStr = LocalizationManager.get("normal");
+
+            boolean playerWon = (p1Hits == winScore);
             battleScreen.setTurnText("Game over");
-            battleScreen.setStatusText("You win!");
+            battleScreen.setStatusText(playerWon ? "You win!" : "You lose.");
             battleScreen.setEnemyEnabled(false);
+            
             if (gameEventListener != null) {
-                gameEventListener.onGameOver(true, p1Shots, p1Hits, p1Sunk);
+                gameEventListener.onGameOver(playerWon, p1Shots, p1Hits, p1Sunk, durationStr, diffStr);
             }
-        } else if (p2Hits == winScore) {
-            isGameOver = true;
-            isBotThinking = false;
-            battleScreen.setTurnText("Game over");
-            battleScreen.setStatusText("You lose.");
-            battleScreen.setEnemyEnabled(false);
-            if (gameEventListener != null) {
-                gameEventListener.onGameOver(false, p1Shots, p1Hits, p1Sunk);
-            }
+            return true;
         }
+        return false;
     }
 
     private void renderShips(Board board, BoardGrid grid) {

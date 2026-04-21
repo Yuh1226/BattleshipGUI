@@ -30,6 +30,7 @@ public class Main extends Application {
 	private GameOverScreen gameOverScreen;
 	private SettingsScreen settingsScreen;
 	private String previousScreen = SCREEN_MENU;
+	private javafx.scene.control.Button globalSettingsBtn;
 
 	@Override
 	public void start(Stage stage) {
@@ -52,10 +53,20 @@ public class Main extends Application {
 		screenManager.addScreen(SCREEN_GAME_OVER, gameOverScreen);
 		screenManager.addScreen(SCREEN_SETTINGS, settingsScreen);
 
+		// Global Settings Button
+		globalSettingsBtn = new javafx.scene.control.Button("⚙");
+		globalSettingsBtn.getStyleClass().add("secondary-button");
+		globalSettingsBtn.setStyle("-fx-font-size: 20px; -fx-padding: 5 10; -fx-background-radius: 40;");
+		javafx.scene.layout.StackPane.setAlignment(globalSettingsBtn, javafx.geometry.Pos.TOP_RIGHT);
+		javafx.scene.layout.StackPane.setMargin(globalSettingsBtn, new javafx.geometry.Insets(20));
+		globalSettingsBtn.setOnAction(e -> openSettings(screenManager, currentScreenName(screenManager)));
+		
+		screenManager.getRoot().getChildren().add(globalSettingsBtn);
+
 		menuScreen.setListener(new MenuScreen.Listener() {
 			@Override
 			public void onStart() {
-				screenManager.show(SCREEN_DIFFICULTY);
+				showScreen(screenManager, SCREEN_DIFFICULTY);
 			}
 
 			@Override
@@ -67,7 +78,12 @@ public class Main extends Application {
 		settingsScreen.setListener(new SettingsScreen.Listener() {
 			@Override
 			public void onBack() {
-				screenManager.show(previousScreen);
+				showScreen(screenManager, previousScreen);
+			}
+
+			@Override
+			public void onBackToMenu() {
+				showScreen(screenManager, SCREEN_MENU);
 			}
 
 			@Override
@@ -95,12 +111,12 @@ public class Main extends Application {
 				}
 				controller.setDifficulty(aiLevel);
 				controller.resetSetup();
-				screenManager.show(SCREEN_SETUP);
+				showScreen(screenManager, SCREEN_SETUP);
 			}
 
 			@Override
 			public void onBack() {
-				screenManager.show(SCREEN_MENU);
+				showScreen(screenManager, SCREEN_MENU);
 			}
 
 			@Override
@@ -112,13 +128,13 @@ public class Main extends Application {
 		setupScreen.addListener(new SetupScreen.Listener() {
 			@Override
 			public void onBack() {
-				screenManager.show(SCREEN_DIFFICULTY);
+				showScreen(screenManager, SCREEN_DIFFICULTY);
 			}
 
 			@Override
 			public void onContinue() {
 				controller.startBattle();
-				screenManager.show(SCREEN_BATTLE);
+				showScreen(screenManager, SCREEN_BATTLE);
 			}
 
 			@Override
@@ -154,12 +170,12 @@ public class Main extends Application {
 			@Override
 			public void onPlayAgain() {
 				controller.resetSetup();
-				screenManager.show(SCREEN_SETUP);
+				showScreen(screenManager, SCREEN_SETUP);
 			}
 
 			@Override
 			public void onBackToMenu() {
-				screenManager.show(SCREEN_MENU);
+				showScreen(screenManager, SCREEN_MENU);
 			}
 
 			@Override
@@ -168,23 +184,36 @@ public class Main extends Application {
 			}
 		});
 
-		controller.setGameEventListener((playerWon, shots, hits, sunk) -> {
+		controller.setGameEventListener((playerWon, shots, hits, sunk, duration, difficulty) -> {
 			if (playerWon) {
 				gameOverScreen.setResultText(LocalizationManager.get("win"));
 			} else {
 				gameOverScreen.setResultText(LocalizationManager.get("lose"));
 			}
-			gameOverScreen.setStats(shots, hits, sunk);
-			screenManager.show(SCREEN_GAME_OVER);
+			gameOverScreen.setStats(shots, hits, sunk, duration, difficulty);
+			showScreen(screenManager, SCREEN_GAME_OVER);
 		});
 
-		screenManager.show(SCREEN_MENU);
+		showScreen(screenManager, SCREEN_MENU);
 
 		Scene scene = new Scene(screenManager.getRoot(), 960, 640);
 		scene.getStylesheets().add(Main.class.getResource("/styles/app.css").toExternalForm());
 		stage.setTitle("Battleship");
 		stage.setScene(scene);
 		stage.show();
+	}
+
+	private String currentScreen;
+	private void showScreen(ScreenManager sm, String name) {
+		this.currentScreen = name;
+		sm.show(name);
+		if (globalSettingsBtn != null) {
+			globalSettingsBtn.setVisible(!SCREEN_SETTINGS.equals(name));
+		}
+	}
+
+	private String currentScreenName(ScreenManager sm) {
+		return currentScreen;
 	}
 
 	private void updateAllScreensLanguage() {
