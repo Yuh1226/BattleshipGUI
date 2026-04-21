@@ -45,4 +45,21 @@ gradle run
 ./gradlew run
 ```
 
-Lệnh trên sẽ tự động tải thư viện liên quan của OpenJFX, biên dịch mã nguồn và khởi động trò chơi ngay lập tức. Chúc bạn chơi game vui vẻ!
+---
+
+## 📦 Chạy bằng file .JAR (Không cần cài Gradle)
+
+Để thuận tiện chia sẻ và chơi ngay mà không cần tải Gradle hay cấu hình lằng nhằng, dự án đã được tích hợp công cụ đóng gói **Fat JAR** (gói trọn mã game + tất cả thư viện JavaFX vào 1 file duy nhất).
+
+Chỉ với máy tính đã cài đặt **Java (JRE/JDK 11+)**, bạn có thể click đúp vào file `.jar` để chạy, hoặc mở terminal và gõ:
+```bash
+java -jar build/libs/BattleshipGUI.jar
+```
+
+**(Dành cho lập trình viên)** Để tự biên dịch và tạo ra file `.jar` đó, bạn dùng lệnh:
+```bash
+gradle jar
+```
+Lệnh này sẽ tạo ra một file `.jar` trong thư mục `build/libs/`.
+
+*Lưu ý: File JAR được tự động liên kết với thư viện JavaFX của Hệ điều hành đang dùng để biên dịch (Ví dụ build trên Windows thì máy Windows khác mới chạy được phần giao diện).*

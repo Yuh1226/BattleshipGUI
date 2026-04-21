@@ -19,8 +19,23 @@ javafx {
 }
 
 application {
-    mainClass = 'battleship.Main'
+    mainClass = 'battleship.App'
 }
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'battleship.App'
+    }
+    // Thu gom tất cả thư viện (JavaFX native) vào chung file jar
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+// Bắt buộc khai báo dependencies native của JavaFX nếu muốn Jar chạy chéo nền tảng (OS).
+// Tuy nhiên java plugin của JFX tự add thư viện của OS hiện tại, 
+// chạy `gradle jar` sẽ tạo ra jar bao gồm bộ runtime của OS đang dùng.
 
 sourceSets {
     main {
