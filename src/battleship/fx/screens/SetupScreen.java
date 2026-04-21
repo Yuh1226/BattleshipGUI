@@ -107,7 +107,7 @@ public class SetupScreen extends VBox {
         actions.getChildren().addAll(backButton, continueButton);
 
         statusLabel.getStyleClass().add("status-emphasis");
-        setupBoard.getStyleClass().add("board-container");
+        setupBoard.getStyleClass().addAll("board-container", "player-board", "active-board");
         
         HBox boardWrapper = new HBox(setupBoard);
         boardWrapper.setAlignment(Pos.CENTER);

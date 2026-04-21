@@ -68,7 +68,7 @@ public class BattleScreen extends BorderPane {
         Label pLabel = new Label("YOUR FLEET");
         pLabel.getStyleClass().add("board-title");
         playerFleetStatus.setAlignment(Pos.CENTER);
-        playerBoard.getStyleClass().add("board-container");
+        playerBoard.getStyleClass().addAll("board-container", "player-board");
         playerSide.getChildren().addAll(pLabel, playerFleetStatus, playerBoard);
 
         // Enemy side
@@ -77,7 +77,7 @@ public class BattleScreen extends BorderPane {
         Label eLabel = new Label("ENEMY SECTOR");
         eLabel.getStyleClass().add("board-title");
         enemyFleetStatus.setAlignment(Pos.CENTER);
-        enemyBoard.getStyleClass().add("board-container");
+        enemyBoard.getStyleClass().addAll("board-container", "enemy-board");
         enemySide.getChildren().addAll(eLabel, enemyFleetStatus, enemyBoard);
 
         centerBox.getChildren().addAll(playerSide, enemySide);
@@ -133,7 +133,6 @@ public class BattleScreen extends BorderPane {
         HBox container = isPlayer ? playerFleetStatus : enemyFleetStatus;
         container.getChildren().clear();
         
-        // This is a simplified view: 5 indicators, dimmed if not in list
         int[] allLengths = {5, 4, 3, 3, 2};
         List<Integer> tempAlive = new ArrayList<>(aliveShipLengths);
         
@@ -170,7 +169,6 @@ public class BattleScreen extends BorderPane {
     }
 
     public void updateLanguage() {
-        // titleLabel might need updating if we kept a reference
         turnLabel.setText(LocalizationManager.get("your_turn"));
     }
 
@@ -186,6 +184,19 @@ public class BattleScreen extends BorderPane {
         return enemyBoard;
     }
 
+    public void updateTurnDisplay(boolean isPlayerTurn) {
+        playerBoard.getStyleClass().remove("active-board");
+        enemyBoard.getStyleClass().remove("active-board");
+        
+        if (isPlayerTurn) {
+            // Player's turn: highlight the target (enemy board)
+            enemyBoard.getStyleClass().add("active-board");
+        } else {
+            // Enemy's turn: highlight the target (player board)
+            playerBoard.getStyleClass().add("active-board");
+        }
+    }
+
     public void setTurnText(String text) {
         turnLabel.setText(text);
     }
@@ -195,10 +206,6 @@ public class BattleScreen extends BorderPane {
     }
 
     public void setEnemyEnabled(boolean enabled) {
-        for (int r = 0; r < BoardGrid.SIZE; r++) {
-            for (int c = 0; c < BoardGrid.SIZE; c++) {
-                enemyBoard.setCellEnabled(r, c, enabled);
-            }
-        }
+        enemyBoard.setDisable(!enabled);
     }
 }

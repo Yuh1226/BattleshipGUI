@@ -161,6 +161,7 @@ public class FxGameController {
         renderShips(p1board, p1view);
         disableBoard(p1view);
         battleScreen.setEnemyEnabled(true);
+        battleScreen.updateTurnDisplay(true); // Player turn starts
         battleScreen.setTurnText("Your turn");
         battleScreen.setStatusText("Pick a target.");
     }
@@ -317,11 +318,13 @@ public class FxGameController {
                 battleScreen.addLogEvent("Player hit at " + coord, false);
                 battleScreen.setStatusText("Hit!");
             }
+            battleScreen.updateTurnDisplay(true); // Keep enemy board highlighted
             battleScreen.setTurnText("Your turn");
             battleScreen.setEnemyEnabled(true);
             checkWinCondition();
         } else if (!isGameOver) {
             battleScreen.addLogEvent("Player missed at " + coord, false);
+            battleScreen.updateTurnDisplay(false); // Switch focus to player board (bot's target)
 			battleScreen.setTurnText("Enemy turn");
 			battleScreen.setStatusText("Miss. Enemy is thinking...");
 			battleScreen.setEnemyEnabled(false);
@@ -331,6 +334,7 @@ public class FxGameController {
 
     private void delayedBotFire() {
         isBotThinking = true;
+        battleScreen.updateTurnDisplay(false); // Highlight target (player board)
         PauseTransition pause = new PauseTransition(Duration.seconds(1));
         pause.setOnFinished(event -> {
             switch (aiLevel) {
@@ -381,6 +385,7 @@ public class FxGameController {
             botFireEasy();
         } else {
             battleScreen.addLogEvent("Enemy missed at " + coord, false);
+            battleScreen.updateTurnDisplay(true); // Player turn: highlight enemy board
             battleScreen.setTurnText("Your turn");
             battleScreen.setStatusText("Enemy missed.");
             battleScreen.setEnemyEnabled(true);
@@ -426,6 +431,7 @@ public class FxGameController {
             }
         } else {
             battleScreen.addLogEvent("Enemy missed at " + coord, false);
+            battleScreen.updateTurnDisplay(true); // Player turn: highlight enemy board
             battleScreen.setTurnText("Your turn");
             battleScreen.setStatusText("Enemy missed.");
             battleScreen.setEnemyEnabled(true);
@@ -472,6 +478,7 @@ public class FxGameController {
             }
         } else {
             battleScreen.addLogEvent("Enemy missed at " + coord, false);
+            battleScreen.updateTurnDisplay(true); // Player turn: highlight enemy board
             battleScreen.setTurnText("Your turn");
             battleScreen.setStatusText("Enemy missed.");
             battleScreen.setEnemyEnabled(true);
