@@ -1,18 +1,32 @@
 package battleship.fx.components;
 
+import javafx.animation.FadeTransition;
+import javafx.animation.ParallelTransition;
+import javafx.animation.ScaleTransition;
+import javafx.animation.TranslateTransition;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
+import javafx.util.Duration;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BooleanSupplier;
+import java.util.function.Supplier;
 
 public class BoardGrid extends GridPane {
     public static final int SIZE = 10;
 
     private final Button[][] buttons = new Button[SIZE][SIZE];
+    
+    // For enhanced Drag & Drop
+    private Supplier<Integer> directionProvider; // 0 for H, 1 for V
+    private PlacementValidator placementValidator;
 
     public BoardGrid() {
         setHgap(2);
         setVgap(2);
-        setPadding(new Insets(6));
+        setPadding(new Insets(5));
 
         for (int r = 0; r < SIZE; r++) {
             for (int c = 0; c < SIZE; c++) {
@@ -29,6 +43,14 @@ public class BoardGrid extends GridPane {
         }
     }
 
+    public void setDirectionProvider(Supplier<Integer> provider) {
+        this.directionProvider = provider;
+    }
+
+    public void setPlacementValidator(PlacementValidator validator) {
+        this.placementValidator = validator;
+    }
+
     public void setOnCellClicked(CellClickListener listener) {
         for (int r = 0; r < SIZE; r++) {
             for (int c = 0; c < SIZE; c++) {
@@ -36,21 +58,6 @@ public class BoardGrid extends GridPane {
                 final int col = c;
                 buttons[r][c].setOnMouseClicked(event -> {
                     if (event.getButton() == javafx.scene.input.MouseButton.PRIMARY && event.getClickCount() == 1) {
-                        listener.onCellClicked(row, col);
-                    }
-                });
-            }
-        }
-    }
-
-    public void setOnCellDoubleClicked(CellClickListener listener) {
-        for (int r = 0; r < SIZE; r++) {
-            for (int c = 0; c < SIZE; c++) {
-                final int row = r;
-                final int col = c;
-                // Add event filter or handler for double click
-                buttons[r][c].addEventHandler(javafx.scene.input.MouseEvent.MOUSE_CLICKED, event -> {
-                    if (event.getButton() == javafx.scene.input.MouseButton.PRIMARY && event.getClickCount() == 2) {
                         listener.onCellClicked(row, col);
                     }
                 });
@@ -82,18 +89,19 @@ public class BoardGrid extends GridPane {
                 cell.setOnDragOver(event -> {
                     if (event.getGestureSource() != cell && event.getDragboard().hasString()) {
                         event.acceptTransferModes(javafx.scene.input.TransferMode.MOVE);
+                        highlightPlacement(row, col, event.getDragboard().getString());
                     }
                     event.consume();
                 });
 
                 cell.setOnDragEntered(event -> {
-                    if (event.getGestureSource() != cell && event.getDragboard().hasString()) {
-                        cell.setOpacity(0.7);
-                    }
+                    // Highlight logic handled in DragOver for continuous updates
+                    event.consume();
                 });
 
                 cell.setOnDragExited(event -> {
-                    cell.setOpacity(1.0);
+                    clearHighlights();
+                    event.consume();
                 });
 
                 cell.setOnDragDropped(event -> {
@@ -103,9 +111,39 @@ public class BoardGrid extends GridPane {
                         listener.onDragDropped(row, col, db.getString());
                         success = true;
                     }
+                    clearHighlights();
                     event.setDropCompleted(success);
                     event.consume();
                 });
+            }
+        }
+    }
+
+    private void highlightPlacement(int row, int col, String data) {
+        clearHighlights();
+        try {
+            int length = Integer.parseInt(data);
+            int direction = (directionProvider != null) ? directionProvider.get() : 0; // 0: H, 1: V
+            
+            boolean isValid = (placementValidator != null) && placementValidator.isValid(length, row, col, direction);
+            String style = isValid ? "drag-valid" : "drag-invalid";
+
+            for (int i = 0; i < length; i++) {
+                int r = row + (direction == 1 ? i : 0);
+                int c = col + (direction == 0 ? i : 0);
+                if (r >= 0 && r < SIZE && c >= 0 && c < SIZE) {
+                    buttons[r][c].getStyleClass().add(style);
+                }
+            }
+        } catch (Exception e) {
+            // ignore
+        }
+    }
+
+    private void clearHighlights() {
+        for (int r = 0; r < SIZE; r++) {
+            for (int c = 0; c < SIZE; c++) {
+                buttons[r][c].getStyleClass().removeAll("drag-valid", "drag-invalid");
             }
         }
     }
@@ -123,13 +161,39 @@ public class BoardGrid extends GridPane {
         }
         cell.setDisable(true);
 
-        // Animation for hit/miss
-        javafx.animation.ScaleTransition st = new javafx.animation.ScaleTransition(javafx.util.Duration.millis(300), cell);
-        st.setFromX(0.5);
-        st.setFromY(0.5);
-        st.setToX(1.0);
-        st.setToY(1.0);
-        st.play();
+        // Enhanced animation: Scale + Fade
+        ScaleTransition st = new ScaleTransition(Duration.millis(300), cell);
+        st.setFromX(0.5); st.setFromY(0.5);
+        st.setToX(1.0); st.setToY(1.0);
+
+        FadeTransition ft = new FadeTransition(Duration.millis(300), cell);
+        ft.setFromValue(0.3);
+        ft.setToValue(1.0);
+
+        ParallelTransition pt = new ParallelTransition(st, ft);
+        pt.play();
+
+        if (isHit) {
+            shakeCell(cell);
+        }
+    }
+
+    public void shake() {
+        TranslateTransition tt = new TranslateTransition(Duration.millis(50), this);
+        tt.setFromX(-5);
+        tt.setToX(5);
+        tt.setCycleCount(4);
+        tt.setAutoReverse(true);
+        tt.play();
+    }
+
+    private void shakeCell(Button cell) {
+        TranslateTransition tt = new TranslateTransition(Duration.millis(50), cell);
+        tt.setFromX(-2);
+        tt.setToX(2);
+        tt.setCycleCount(4);
+        tt.setAutoReverse(true);
+        tt.play();
     }
 
     public void showShipCell(int row, int col) {
@@ -140,6 +204,7 @@ public class BoardGrid extends GridPane {
     public void markButtonAsSunk(int row, int col) {
         Button cell = buttons[row][col];
         applyState(cell, "state-sunk");
+        shakeCell(cell);
     }
 
     public void reset() {
@@ -149,6 +214,7 @@ public class BoardGrid extends GridPane {
                 cell.setDisable(false);
                 cell.setText("");
                 applyState(cell, "state-sea");
+                cell.getStyleClass().removeAll("drag-valid", "drag-invalid");
             }
         }
     }
@@ -163,6 +229,10 @@ public class BoardGrid extends GridPane {
 
     public interface CellDragDroppedListener {
         void onDragDropped(int row, int col, String data);
+    }
+
+    public interface PlacementValidator {
+        boolean isValid(int length, int row, int col, int direction);
     }
 
     private void applyState(Button cell, String stateClass) {

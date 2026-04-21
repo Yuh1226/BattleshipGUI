@@ -37,7 +37,8 @@ public class FxGameController {
     private boolean isBotThinking = false;
     private int aiLevel = BattleshipAI.HARD;
     private BattleshipAI botAI = new BattleshipAI();
-    private List<Integer> aliveShips = new ArrayList<>(Arrays.asList(5, 4, 3, 3, 2));
+    private List<Integer> p1AliveShips = new ArrayList<>(Arrays.asList(5, 4, 3, 3, 2));
+    private List<Integer> p2AliveShips = new ArrayList<>(Arrays.asList(5, 4, 3, 3, 2));
 
     private List<Integer> remainingShips = new ArrayList<>();
     private int selectedLength = 5;
@@ -52,6 +53,9 @@ public class FxGameController {
         this.setupView = setupScreen.getBoard();
         this.p1view = battleScreen.getPlayerBoard();
         this.p2view = battleScreen.getEnemyBoard();
+
+        setupView.setDirectionProvider(() -> direction);
+        setupView.setPlacementValidator(p1board::canPlaceShip);
 
         setupView.setOnCellClicked(this::handleSetupPlacement);
         setupView.setOnCellRightClicked(this::handleSetupRemoveShip);
@@ -145,10 +149,15 @@ public class FxGameController {
         isGameOver = false;
         isBotThinking = false;
         botAI = new BattleshipAI();
-        aliveShips = new ArrayList<>(Arrays.asList(5, 4, 3, 3, 2));
+        p1AliveShips = new ArrayList<>(Arrays.asList(5, 4, 3, 3, 2));
+        p2AliveShips = new ArrayList<>(Arrays.asList(5, 4, 3, 3, 2));
 
         p1view.reset();
         p2view.reset();
+        battleScreen.clearLog();
+        battleScreen.addLogEvent("Battle started!", true);
+        battleScreen.updateFleetStatus(true, p1AliveShips);
+        battleScreen.updateFleetStatus(false, p2AliveShips);
         renderShips(p1board, p1view);
         disableBoard(p1view);
         battleScreen.setEnemyEnabled(true);
@@ -288,22 +297,31 @@ public class FxGameController {
         }
 
         p1Shots++;
+        String coord = (char)('A' + col) + "" + (row + 1);
         boolean isHit = p2board.fireAt(row, col);
         p2view.updateButtonState(row, col, isHit);
 
         if (isHit) {
             p1Hits++;
+            p2view.shake();
             if (p2board.isSunkAt(row, col)) {
                 p1Sunk++;
+                int len = p2board.lengthShipIs(row, col);
+                p2AliveShips.remove(Integer.valueOf(len));
+                battleScreen.updateFleetStatus(false, p2AliveShips);
+                battleScreen.addLogEvent("YOU SUNK A SHIP (" + len + ") at " + coord, true);
+                
                 markSunkShip(p2board, p2view, row, col);
                 battleScreen.setStatusText("Hit! Enemy ship sunk.");
             } else {
+                battleScreen.addLogEvent("Player hit at " + coord, false);
                 battleScreen.setStatusText("Hit!");
             }
             battleScreen.setTurnText("Your turn");
             battleScreen.setEnemyEnabled(true);
             checkWinCondition();
         } else if (!isGameOver) {
+            battleScreen.addLogEvent("Player missed at " + coord, false);
 			battleScreen.setTurnText("Enemy turn");
 			battleScreen.setStatusText("Miss. Enemy is thinking...");
 			battleScreen.setEnemyEnabled(false);
@@ -336,19 +354,33 @@ public class FxGameController {
             return;
         }
 
-        Node targetNode = botAI.determineTarget(p1board, BattleshipAI.EASY, aliveShips);
+        Node targetNode = botAI.determineTarget(p1board, BattleshipAI.EASY, p1AliveShips);
         int r = targetNode.getX();
         int c = targetNode.getY();
+        String coord = (char)('A' + c) + "" + (r + 1);
 
         boolean isHit = p1board.fireAt(r, c);
         p1view.updateButtonState(r, c, isHit);
 
         if (isHit) {
             p2Hits++;
+            p1view.shake();
+            battleScreen.addLogEvent("Enemy hit your ship at " + coord, false);
             battleScreen.setStatusText("Enemy hit your ship.");
+            
+            if (p1board.isSunkAt(r, c)) {
+                int len = p1board.lengthShipIs(r, c);
+                p1AliveShips.remove(Integer.valueOf(len));
+                battleScreen.updateFleetStatus(true, p1AliveShips);
+                battleScreen.addLogEvent("ENEMY SUNK YOUR SHIP (" + len + ")!", true);
+                p1view.shake();
+                markSunkShip(p1board, p1view, r, c);
+            }
+            
             checkWinCondition();
             botFireEasy();
         } else {
+            battleScreen.addLogEvent("Enemy missed at " + coord, false);
             battleScreen.setTurnText("Your turn");
             battleScreen.setStatusText("Enemy missed.");
             battleScreen.setEnemyEnabled(true);
@@ -362,24 +394,38 @@ public class FxGameController {
             return;
         }
 
-        Node targetNode = botAI.determineTarget(p1board, BattleshipAI.MEDIUM, aliveShips);
+        Node targetNode = botAI.determineTarget(p1board, BattleshipAI.MEDIUM, p1AliveShips);
         int r = targetNode.getX();
         int c = targetNode.getY();
+        String coord = (char)('A' + c) + "" + (r + 1);
 
         boolean isHit = p1board.fireAt(r, c);
         p1view.updateButtonState(r, c, isHit);
 
         if (isHit) {
             p2Hits++;
+            p1view.shake();
+            battleScreen.addLogEvent("Enemy hit your ship at " + coord, false);
             battleScreen.setStatusText("Enemy hit your ship.");
-            checkWinCondition();
             botAI.updateAfterFire(p1board, targetNode, isHit);
+            
+            if (p1board.isSunkAt(r, c)) {
+                int len = p1board.lengthShipIs(r, c);
+                p1AliveShips.remove(Integer.valueOf(len));
+                battleScreen.updateFleetStatus(true, p1AliveShips);
+                battleScreen.addLogEvent("ENEMY SUNK YOUR SHIP (" + len + ")!", true);
+                p1view.shake();
+                markSunkShip(p1board, p1view, r, c);
+            }
+
             if (!isGameOver) {
+                checkWinCondition();
                 delayedBotFire();
             } else {
                 isBotThinking = false;
             }
         } else {
+            battleScreen.addLogEvent("Enemy missed at " + coord, false);
             battleScreen.setTurnText("Your turn");
             battleScreen.setStatusText("Enemy missed.");
             battleScreen.setEnemyEnabled(true);
@@ -393,34 +439,30 @@ public class FxGameController {
             return;
         }
 
-        Node targetNode = botAI.determineTarget(p1board, BattleshipAI.HARD, aliveShips);
+        Node targetNode = botAI.determineTarget(p1board, BattleshipAI.HARD, p1AliveShips);
         int r = targetNode.getX();
         int c = targetNode.getY();
-        Node[][] p1Grid = p1board.getGrid();
+        String coord = (char)('A' + c) + "" + (r + 1);
 
         boolean isHit = p1board.fireAt(r, c);
         p1view.updateButtonState(r, c, isHit);
 
         if (isHit) {
             p2Hits++;
+            p1view.shake();
+            battleScreen.addLogEvent("Enemy hit your ship at " + coord, false);
             battleScreen.setStatusText("Enemy hit your ship.");
             checkWinCondition();
 
             botAI.updateAfterFire(p1board, targetNode, isHit);
 
             if (p1board.isSunkAt(r, c)) {
-                int lengthShip = p1board.lengthShipIs(r, c);
-                aliveShips.remove(Integer.valueOf(lengthShip));
-                p1board.markShipAsSunk(r, c, p1Grid);
-				battleScreen.setStatusText("Enemy sunk your ship.");
-
-                for (int i = 0; i < 10; i++) {
-                    for (int j = 0; j < 10; j++) {
-                        if (p1board.getGrid()[i][j].getVal() == Node.SUNK) {
-                            p1view.markButtonAsSunk(i, j);
-                        }
-                    }
-                }
+                int len = p1board.lengthShipIs(r, c);
+                p1AliveShips.remove(Integer.valueOf(len));
+                battleScreen.updateFleetStatus(true, p1AliveShips);
+                battleScreen.addLogEvent("ENEMY SUNK YOUR SHIP (" + len + ")!", true);
+                p1view.shake();
+                markSunkShip(p1board, p1view, r, c);
             }
 
             if (!isGameOver) {
@@ -429,6 +471,7 @@ public class FxGameController {
                 isBotThinking = false;
             }
         } else {
+            battleScreen.addLogEvent("Enemy missed at " + coord, false);
             battleScreen.setTurnText("Your turn");
             battleScreen.setStatusText("Enemy missed.");
             battleScreen.setEnemyEnabled(true);

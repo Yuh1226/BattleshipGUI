@@ -145,11 +145,6 @@ public class Main extends Application {
 
 		battleScreen.setListener(new BattleScreen.Listener() {
 			@Override
-			public void onBackToMenu() {
-				screenManager.show(SCREEN_MENU);
-			}
-
-			@Override
 			public void onOpenSettings() {
 				openSettings(screenManager, SCREEN_BATTLE);
 			}

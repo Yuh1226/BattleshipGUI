@@ -1,113 +1,128 @@
 .root {
     -fx-font-family: "Segoe UI", Helvetica, Arial, sans-serif;
-    -fx-background-color: linear-gradient(to bottom right, #E0F2F1, #B2EBF2);
+    -fx-background-color: #f0f2f5; /* Light Flat Background */
 }
 
 .screen-root {
-    -fx-padding: 10 20;
-    -fx-spacing: 10;
+    -fx-padding: 15 25;
+    -fx-spacing: 12;
     -fx-alignment: center;
-    -fx-background-color: rgba(255, 255, 255, 0.4);
-    -fx-background-radius: 20;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);
+    -fx-background-color: white;
+    -fx-background-radius: 16;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 20, 0, 0, 0);
 }
 
 .screen-title {
-    -fx-font-size: 24px;
+    -fx-font-size: 26px;
     -fx-font-weight: bold;
-    -fx-text-fill: #006064;
+    -fx-text-fill: #1c1e21;
 }
 
 .screen-subtitle {
-    -fx-font-size: 13px;
-    -fx-text-fill: #455A64;
+    -fx-font-size: 14px;
+    -fx-text-fill: #606770;
 }
 
 .info-label {
     -fx-font-size: 12px;
-    -fx-text-fill: #546E7A;
+    -fx-text-fill: #8d949e;
 }
 
 .action-button {
-    -fx-background-color: #00ACC1;
+    -fx-background-color: #1877f2; /* Modern Blue */
     -fx-text-fill: white;
-    -fx-font-size: 13px;
+    -fx-font-size: 14px;
     -fx-font-weight: bold;
-    -fx-padding: 8 16;
-    -fx-background-radius: 20;
+    -fx-padding: 10 20;
+    -fx-background-radius: 8;
     -fx-cursor: hand;
 }
 
 .action-button:hover {
-    -fx-background-color: #0097A7;
-    -fx-scale-x: 1.05;
-    -fx-scale-y: 1.05;
+    -fx-background-color: #166fe5;
 }
 
 .secondary-button {
-    -fx-background-color: white;
-    -fx-text-fill: #00838F;
-    -fx-font-size: 12px;
+    -fx-background-color: #e4e6eb;
+    -fx-text-fill: #050505;
+    -fx-font-size: 13px;
     -fx-font-weight: bold;
-    -fx-padding: 6 12;
-    -fx-background-radius: 20;
+    -fx-padding: 8 16;
+    -fx-background-radius: 8;
     -fx-cursor: hand;
-    -fx-border-color: #00ACC1;
-    -fx-border-radius: 20;
-    -fx-border-width: 1.5;
 }
 
 .secondary-button:hover {
-    -fx-background-color: #F0F4F4;
+    -fx-background-color: #d8dadf;
 }
 
 .board-container {
-    -fx-padding: 5;
-    -fx-background-color: rgba(255, 255, 255, 0.9);
-    -fx-background-radius: 10;
-    -fx-border-color: #B2EBF2;
-    -fx-border-radius: 10;
-}
-
-.board-title {
-    -fx-font-size: 14px;
-    -fx-font-weight: bold;
-    -fx-text-fill: #37474F;
-}
-
-.cell-button {
-    -fx-pref-width: 24px;
-    -fx-pref-height: 24px;
-    -fx-background-radius: 3;
-    -fx-border-radius: 3;
-}
-
-.state-sea {
-    -fx-background-color: #E1F5FE;
-    -fx-border-color: #B3E5FC;
+    -fx-padding: 6;
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 12;
+    -fx-border-color: #dddfe2;
+    -fx-border-radius: 12;
     -fx-border-width: 1;
 }
 
+.board-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #4b4f56;
+}
+
+.cell-button {
+    -fx-pref-width: 26px;
+    -fx-pref-height: 26px;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+    -fx-cursor: hand;
+}
+
+.state-sea {
+    -fx-background-color: #e7f3ff; /* Very Light Blue */
+    -fx-border-color: #c0deff;
+    -fx-border-width: 1;
+}
+
+.state-sea:hover {
+    -fx-background-color: #d1e7ff;
+}
+
 .state-ship {
-    -fx-background-color: #455A64;
+    -fx-background-color: #4b4f56; /* Dark Gray */
 }
 
 .state-hit {
-    -fx-background-color: #FF5252;
+    -fx-background-color: #fa3e3e; /* Modern Red */
+    -fx-effect: dropshadow(three-pass-box, rgba(250,62,62,0.3), 5, 0, 0, 0);
 }
 
 .state-miss {
-    -fx-background-color: #CFD8DC;
+    -fx-background-color: #bec3c9; /* Gray */
 }
 
 .state-sunk {
-    -fx-background-color: #263238;
+    -fx-background-color: #1c1e21; /* Darker blackish */
+}
+
+/* Drag & Drop Feedback Classes */
+.drag-valid {
+    -fx-background-color: rgba(40, 167, 69, 0.4); /* Light Green */
+    -fx-border-color: #28a745;
+    -fx-border-width: 1.5;
+}
+
+.drag-invalid {
+    -fx-background-color: rgba(220, 53, 69, 0.4); /* Light Red */
+    -fx-border-color: #dc3545;
+    -fx-border-width: 1.5;
 }
 
 .status-emphasis {
-    -fx-font-size: 14px;
+    -fx-font-size: 15px;
     -fx-font-weight: bold;
-    -fx-text-fill: #00796B;
+    -fx-text-fill: #1877f2;
 }
 
 .battle-boards {
@@ -115,28 +130,77 @@
     -fx-alignment: center;
 }
 
+.log-container {
+    -fx-background-color: #f7f8fa;
+    -fx-background-radius: 8;
+    -fx-border-color: #ebedf0;
+    -fx-border-radius: 8;
+    -fx-border-width: 1;
+}
+
+.log-entry {
+    -fx-font-size: 11px;
+    -fx-text-fill: #606770;
+    -fx-padding: 2 0;
+}
+
+.log-entry-highlight {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #fa3e3e;
+    -fx-padding: 2 0;
+}
+
+.fleet-indicator-ship {
+    -fx-spacing: 1;
+    -fx-padding: 2;
+}
+
+.fleet-segment-alive {
+    -fx-background-color: #4b4f56;
+    -fx-background-radius: 1;
+}
+
+.fleet-segment-sunk {
+    -fx-background-color: #bec3c9;
+    -fx-opacity: 0.4;
+    -fx-background-radius: 1;
+}
+
 .stats-container {
-    -fx-background-color: rgba(255, 255, 255, 0.7);
+    -fx-background-color: #f7f8fa;
     -fx-background-radius: 12;
-    -fx-border-color: #00ACC1;
+    -fx-border-color: #ebedf0;
     -fx-border-radius: 12;
-    -fx-padding: 15;
+    -fx-padding: 20;
+}
+
+.stat-label {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #65676b;
+    -fx-opacity: 0.9;
 }
 
 .stat-value {
-    -fx-font-size: 16px;
+    -fx-font-size: 18px;
     -fx-font-weight: bold;
-    -fx-text-fill: #00838F;
+    -fx-text-fill: #1c1e21;
 }
 
 .settings-container {
-    -fx-background-color: rgba(255, 255, 255, 0.7);
+    -fx-background-color: #f7f8fa;
     -fx-background-radius: 12;
-    -fx-border-color: #00ACC1;
+    -fx-border-color: #ebedf0;
     -fx-border-radius: 12;
-    -fx-padding: 15;
+    -fx-padding: 20;
 }
 
 .settings-combo {
-    -fx-pref-width: 140;
+    -fx-pref-width: 160;
+}
+
+.settings-check {
+    -fx-font-size: 13px;
+    -fx-text-fill: #1c1e21;
 }
