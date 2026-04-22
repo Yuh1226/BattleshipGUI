@@ -104,6 +104,11 @@ public class BattleshipAI {
 
 			if (p1Grid[r][c].getVal() == Node.MISS || p1Grid[r][c].getVal() == Node.SUNK)
 				return false;
+
+			// MỚI: Nếu ô này nằm sát tàu đã chìm thì kịch bản xếp tàu này không hợp lệ
+			if (isAdjacentToSunk(p1Grid, r, c)) {
+				return false;
+			}
 		}
 		return true;
 	}
@@ -131,36 +136,36 @@ public class BattleshipAI {
 
 	// Lấy trọng số cao nhất
 	public Node getHighestScoreNode(Node[][] p1Grid, int[][] heatmap) {
-			int maxHeat = -1;
-			List<Node> bestNodes = new ArrayList<>();
+		int maxHeat = -1;
+		List<Node> bestNodes = new ArrayList<>();
 
-			for (int i = 0; i < 10; i++) {
-				for (int j = 0; j < 10; j++) {
-					int val = p1Grid[i][j].getVal();
+		for (int i = 0; i < 10; i++) {
+			for (int j = 0; j < 10; j++) {
+				int val = p1Grid[i][j].getVal();
 
-					// Chỉ xét những ô chưa bắn
-					if (val != Node.HIT && val != Node.MISS && val != Node.SUNK) {
-						if (heatmap[i][j] > maxHeat) {
-							// Nếu tìm thấy mốc điểm mới cao hơn, xóa sạch list cũ và thêm ô mới này vào
-							maxHeat = heatmap[i][j];
-							bestNodes.clear();
-							bestNodes.add(p1Grid[i][j]);
-						} else if (heatmap[i][j] == maxHeat) {
-							// Nếu điểm bằng với kỷ lục hiện tại, thêm nó vào list ứng viên
-							bestNodes.add(p1Grid[i][j]);
-						}
+				// SỬA ĐỔI: Chỉ xét những ô chưa bắn VÀ KHÔNG nằm sát tàu đã chìm
+				if (val != Node.HIT && val != Node.MISS && val != Node.SUNK && !isAdjacentToSunk(p1Grid, i, j)) {
+					if (heatmap[i][j] > maxHeat) {
+						// Nếu tìm thấy mốc điểm mới cao hơn, xóa sạch list cũ và thêm ô mới này vào
+						maxHeat = heatmap[i][j];
+						bestNodes.clear();
+						bestNodes.add(p1Grid[i][j]);
+					} else if (heatmap[i][j] == maxHeat) {
+						// Nếu điểm bằng với kỷ lục hiện tại, thêm nó vào list ứng viên
+						bestNodes.add(p1Grid[i][j]);
 					}
 				}
 			}
-
-			// Bốc ngẫu nhiên 1 ô trong danh sách các ô có điểm cao nhất
-			if (!bestNodes.isEmpty()) {
-				Random rd = new Random();
-				return bestNodes.get(rd.nextInt(bestNodes.size()));
-			}
-
-			return null; // Trường hợp bảng đã kín hết (thường không xảy ra)
 		}
+
+		// Bốc ngẫu nhiên 1 ô trong danh sách các ô có điểm cao nhất
+		if (!bestNodes.isEmpty()) {
+			Random rd = new Random();
+			return bestNodes.get(rd.nextInt(bestNodes.size()));
+		}
+
+		return null; // Trường hợp bảng đã kín hết (thường không xảy ra)
+	}
 
 	private Node getRandomNode(Node[][] p1Grid) {
 		Random rd = new Random();
@@ -279,5 +284,23 @@ public class BattleshipAI {
 				iterator.remove();
 			}
 		}
+	}
+
+	// HÀM MỚI: Kiểm tra xem ô (r, c) có nằm sát tàu đã chìm không (8 hướng)
+	private boolean isAdjacentToSunk(Node[][] grid, int r, int c) {
+		for (int i = -1; i <= 1; i++) {
+			for (int j = -1; j <= 1; j++) {
+				if (i == 0 && j == 0) continue;
+				int nr = r + i;
+				int nc = c + j;
+				// Nếu tọa độ hợp lệ và ô đó là tàu đã chìm
+				if (nr >= 0 && nr < 10 && nc >= 0 && nc < 10) {
+					if (grid[nr][nc].getVal() == Node.SUNK) {
+						return true;
+					}
+				}
+			}
+		}
+		return false;
 	}
 }
