@@ -460,9 +460,7 @@ public class FxGameController {
 
             } else {
                 battleScreen.addLogEvent(String.format(LocalizationManager.get("log_player_miss"), coord), false);
-                battleScreen.updateTurnDisplay(false);
-                battleScreen.setTurnText(LocalizationManager.get("turn_enemy"));
-                battleScreen.setStatusText(LocalizationManager.get("status_miss_thinking"));
+                battleScreen.setStatusText(LocalizationManager.get("status_miss"));
                 battleScreen.setEnemyEnabled(false);
                 
                 // Wait for the miss sound to finish before bot turn starts
@@ -479,7 +477,10 @@ public class FxGameController {
         stopTurnTimer();
         isBotThinking = true;
         battleScreen.updateTurnDisplay(false); // Highlight target (player board)
-        PauseTransition pause = new PauseTransition(Duration.seconds(1));
+        battleScreen.setTurnText(LocalizationManager.get("turn_enemy"));
+        battleScreen.setStatusText(LocalizationManager.get("status_miss_thinking"));
+        
+        PauseTransition pause = new PauseTransition(Duration.seconds(1.2));
         pause.setOnFinished(event -> {
             switch (aiLevel) {
                 case BattleshipAI.EASY:
@@ -536,20 +537,22 @@ public class FxGameController {
                 AudioManager.getInstance().playSound(sfx, () -> {
                     isProcessingAction = false;
                     if (!checkWinCondition()) {
-                        botFireEasy();
+                        delayedBotFire();
                     }
                 });
             } else {
                 battleScreen.addLogEvent(String.format(LocalizationManager.get("log_enemy_miss"), coord), false);
-                battleScreen.updateTurnDisplay(true);
-                battleScreen.setTurnText(LocalizationManager.get("turn_player"));
                 battleScreen.setStatusText(LocalizationManager.get("status_enemy_miss"));
-                battleScreen.setEnemyEnabled(true);
                 
                 AudioManager.getInstance().playSound("miss", () -> {
                     isProcessingAction = false;
                     isBotThinking = false;
-                    startTurnTimer();
+                    battleScreen.updateTurnDisplay(true);
+                    battleScreen.setTurnText(LocalizationManager.get("turn_player"));
+                    battleScreen.setEnemyEnabled(true);
+                    if (!checkWinCondition()) {
+                        startTurnTimer();
+                    }
                 });
             }
         });
@@ -604,15 +607,17 @@ public class FxGameController {
                 });
             } else {
                 battleScreen.addLogEvent(String.format(LocalizationManager.get("log_enemy_miss"), coord), false);
-                battleScreen.updateTurnDisplay(true);
-                battleScreen.setTurnText(LocalizationManager.get("turn_player"));
                 battleScreen.setStatusText(LocalizationManager.get("status_enemy_miss"));
-                battleScreen.setEnemyEnabled(true);
                 
                 AudioManager.getInstance().playSound("miss", () -> {
                     isProcessingAction = false;
                     isBotThinking = false;
-                    startTurnTimer();
+                    battleScreen.updateTurnDisplay(true);
+                    battleScreen.setTurnText(LocalizationManager.get("turn_player"));
+                    battleScreen.setEnemyEnabled(true);
+                    if (!checkWinCondition()) {
+                        startTurnTimer();
+                    }
                 });
             }
         });
@@ -667,15 +672,17 @@ public class FxGameController {
                 });
             } else {
                 battleScreen.addLogEvent(String.format(LocalizationManager.get("log_enemy_miss"), coord), false);
-                battleScreen.updateTurnDisplay(true);
-                battleScreen.setTurnText(LocalizationManager.get("turn_player"));
                 battleScreen.setStatusText(LocalizationManager.get("status_enemy_miss"));
-                battleScreen.setEnemyEnabled(true);
                 
                 AudioManager.getInstance().playSound("miss", () -> {
                     isProcessingAction = false;
                     isBotThinking = false;
-                    startTurnTimer();
+                    battleScreen.updateTurnDisplay(true);
+                    battleScreen.setTurnText(LocalizationManager.get("turn_player"));
+                    battleScreen.setEnemyEnabled(true);
+                    if (!checkWinCondition()) {
+                        startTurnTimer();
+                    }
                 });
             }
         });
