@@ -22,9 +22,9 @@ public class AudioManager {
     private AudioManager() {
         // Cố định thời gian ngắn lại ngay tại đây (đơn vị: giây)
         loadSound("fire", "/audio/cannon_fire.mp3", 1.0);
-        loadSound("hit", "/audio/cannon_hit_ship_short.mp3", 4.0);
+        loadSound("hit", "/audio/cannon_hit_ship_short.mp3", 1.2);
         loadSound("miss", "/audio/water_splash.mp3", 1.0);
-        loadSound("sunk", "/audio/ship_destroyed.mp3", 1.2);
+        loadSound("sunk", "/audio/ship_destroyed.mp3", 3.0);
         
         loadBackgroundMusic("/audio/Nhac_nen.mp3");
     }
